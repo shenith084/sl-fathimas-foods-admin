@@ -1,0 +1,281 @@
+"use client";
+
+import { useState, useEffect, use } from "react";
+import Link from "next/link";
+import { ChevronRight, ShoppingCart, Shield, Truck, RefreshCcw, Plus, Minus, Check } from "lucide-react";
+import { notFound } from "next/navigation";
+import { db } from "@/lib/firebase/client";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { useCartStore } from "@/store/cartStore";
+import { products as fallbackProducts } from "@/lib/mockData";
+
+function StarRating({ rating, count }: { rating: number; count: number }) {
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex gap-0.5">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <svg key={i} className={`w-4 h-4 ${i < Math.round(rating) ? "fill-[#D98C1F] text-[#D98C1F]" : "fill-gray-200 text-gray-200"}`} viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+        ))}
+      </div>
+      <span className="text-sm text-[#666]">{rating} ({count} reviews)</span>
+    </div>
+  );
+}
+
+export default function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const unwrappedParams = use(params);
+  const slug = unwrappedParams.slug;
+
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [qty, setQty] = useState(1);
+  const [vacuum, setVacuum] = useState(false);
+  const [added, setAdded] = useState(false);
+
+  const addItem = useCartStore((state) => state.addItem);
+
+  // Fetch product from Firestore or mock fallback
+  useEffect(() => {
+    const fetchProduct = async () => {
+      setLoading(true);
+      try {
+        const q = query(collection(db, "products"), where("slug", "==", slug));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const docData = querySnapshot.docs[0].data();
+          setProduct({ id: querySnapshot.docs[0].id, ...docData });
+        } else {
+          const localProd = fallbackProducts.find(p => p.slug === slug);
+          setProduct(localProd || null);
+        }
+      } catch (err) {
+        console.warn("Firestore fetch error, falling back to local static catalog:", err);
+        const localProd = fallbackProducts.find(p => p.slug === slug);
+        setProduct(localProd || null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="bg-[#FAF7F2] min-h-screen flex flex-col items-center justify-center py-12">
+        <div className="w-12 h-12 border-4 border-[#556B4F] border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-[#556B4F] font-semibold text-sm">Loading product details...</p>
+      </div>
+    );
+  }
+
+  if (!product) {
+    notFound();
+  }
+
+  // Calculate prices
+  const vacuumPrice = vacuum && product.customizable ? 50 : 0;
+  const totalPrice = (product.price + vacuumPrice) * qty;
+
+  const handleAddToCart = () => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      emoji: product.emoji,
+      weight: product.weight,
+      vacuum: vacuum && product.customizable,
+    }, qty);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  };
+
+  // Compute related products
+  const related = fallbackProducts
+    .filter(p => p.category === product.category && p.slug !== product.slug)
+    .slice(0, 4);
+
+  if (related.length < 4) {
+    const extra = fallbackProducts
+      .filter(p => p.slug !== product.slug && !related.find(r => r.slug === p.slug))
+      .slice(0, 4 - related.length);
+    related.push(...extra);
+  }
+
+  return (
+    <div className="bg-[#FAF7F2] min-h-screen">
+      {/* Breadcrumb */}
+      <div className="bg-white border-b border-gray-100 py-3 px-4">
+        <div className="max-w-7xl mx-auto">
+          <nav className="flex items-center gap-1.5 text-xs text-[#999]">
+            <Link href="/" className="hover:text-[#D98C1F]">Home</Link>
+            <ChevronRight className="w-3 h-3" />
+            <Link href="/products" className="hover:text-[#D98C1F]">Products</Link>
+            <ChevronRight className="w-3 h-3" />
+            <span className="text-[#444]">{product.name}</span>
+          </nav>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+          {/* Product Image */}
+          <div className="space-y-4">
+            <div className="bg-gradient-to-br from-[#F4EFE6] to-[#FAF7F2] rounded-3xl aspect-square flex items-center justify-center shadow-md relative overflow-hidden">
+              {product.badge && (
+                <span className="absolute top-4 left-4 bg-[#D98C1F] text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                  {product.badge}
+                </span>
+              )}
+              <span className="text-[10rem] select-none">{product.emoji}</span>
+            </div>
+            {/* Thumbnail row */}
+            <div className="flex gap-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className={`flex-1 bg-gradient-to-br from-[#F4EFE6] to-[#FAF7F2] rounded-xl aspect-square flex items-center justify-center cursor-pointer border-2 transition-colors ${i === 1 ? "border-[#D98C1F]" : "border-transparent hover:border-[#D98C1F]/40"}`}>
+                  <span className="text-3xl">{product.emoji}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Product Info */}
+          <div>
+            <p className="text-[#D98C1F] text-xs font-semibold uppercase tracking-widest mb-2">{product.category.replace("-", " ")}</p>
+            <h1 className="font-display font-bold text-[#222] text-3xl md:text-4xl mb-3 leading-tight">{product.name}</h1>
+
+            <StarRating rating={product.rating} count={product.reviews} />
+
+            <div className="my-5 flex items-baseline gap-3">
+              <span className="font-display font-bold text-[#D98C1F] text-4xl">
+                LKR {product.price.toLocaleString()}.00
+              </span>
+              {product.customizable && (
+                <span className="text-[#999] text-sm">+ vacuum packaging option</span>
+              )}
+            </div>
+
+            <p className="text-[#666] leading-relaxed mb-6">{product.description}</p>
+
+            {/* Product details */}
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              {[
+                { label: "Weight", value: product.weight },
+                { label: "Shelf Life", value: product.shelfLife },
+                { label: "Preservatives", value: "None" },
+                { label: "Certification", value: "Halal ☪️" },
+              ].map((d) => (
+                <div key={d.label} className="bg-[#F4EFE6] rounded-xl px-4 py-3">
+                  <p className="text-[#999] text-xs mb-0.5">{d.label}</p>
+                  <p className="font-semibold text-[#222] text-sm">{d.value}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Vacuum packaging option */}
+            {product.customizable && (
+              <div className="mb-5 bg-white border border-gray-200 rounded-2xl p-4">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={vacuum}
+                    onChange={(e) => setVacuum(e.target.checked)}
+                    className="sr-only"
+                  />
+                  <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${vacuum ? "bg-[#556B4F] border-[#556B4F]" : "border-gray-300"}`}>
+                    {vacuum && <Check className="w-3 h-3 text-white" />}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[#222] text-sm">Vacuum Packaging (+LKR 50/item)</p>
+                    <p className="text-[#999] text-xs">Ideal for overseas orders — extends shelf life</p>
+                  </div>
+                </label>
+              </div>
+            )}
+
+            {/* Quantity */}
+            <div className="flex items-center gap-4 mb-6">
+              <span className="text-sm font-medium text-[#444]">Quantity:</span>
+              <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl p-1">
+                <button onClick={() => setQty(Math.max(1, qty - 1))} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-[#FAF7F2] transition-colors">
+                  <Minus className="w-4 h-4 text-[#555]" />
+                </button>
+                <span className="w-8 text-center font-semibold text-[#222]">{qty}</span>
+                <button onClick={() => setQty(qty + 1)} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-[#FAF7F2] transition-colors">
+                  <Plus className="w-4 h-4 text-[#555]" />
+                </button>
+              </div>
+              <span className="text-sm text-[#999]">
+                Total: <span className="font-bold text-[#D98C1F]">LKR {totalPrice.toLocaleString()}.00</span>
+              </span>
+            </div>
+
+            {/* Add to Cart */}
+            <div className="flex gap-3 mb-6">
+              <button
+                id={`product-detail-add-cart-${product.id}`}
+                onClick={handleAddToCart}
+                className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl font-semibold text-base transition-all duration-200 ${
+                  added ? "bg-[#556B4F] text-white animate-pulse" : "bg-[#D98C1F] hover:bg-[#B8740F] text-white shadow-lg hover:shadow-xl"
+                }`}
+              >
+                {added ? (
+                  <><Check className="w-5 h-5" /> Added to Cart!</>
+                ) : (
+                  <><ShoppingCart className="w-5 h-5" /> Add to Cart</>
+                )}
+              </button>
+              <Link
+                href="/checkout"
+                className="px-6 py-4 rounded-2xl font-semibold text-base border-2 border-[#556B4F] text-[#556B4F] hover:bg-[#556B4F] hover:text-white transition-all duration-200"
+              >
+                Buy Now
+              </Link>
+            </div>
+
+            {/* Trust badges */}
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { icon: <Shield className="w-4 h-4" />, label: "100% Natural" },
+                { icon: <Truck className="w-4 h-4" />, label: "Island-wide Delivery" },
+                { icon: <RefreshCcw className="w-4 h-4" />, label: "Quality Guarantee" },
+              ].map((b) => (
+                <div key={b.label} className="flex flex-col items-center gap-1 bg-[#F4EFE6] rounded-xl p-3 text-center">
+                  <span className="text-[#556B4F]">{b.icon}</span>
+                  <span className="text-[#555] text-xs font-medium">{b.label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Ingredients */}
+            <div className="mt-6 bg-white border border-gray-100 rounded-2xl p-5">
+              <h3 className="font-display font-semibold text-[#222] text-sm mb-2">🌿 Ingredients</h3>
+              <p className="text-[#666] text-sm leading-relaxed">{product.ingredients}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* You May Also Like */}
+        <div className="mt-16">
+          <h2 className="font-display font-bold text-[#222] text-2xl mb-6">
+            You May Also <span className="text-[#D98C1F]">Like</span>
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {related.map((p) => (
+              <Link key={p.id} href={`/products/${p.slug}`} className="product-card bg-white rounded-2xl overflow-hidden shadow-card group block">
+                <div className="h-36 bg-gradient-to-br from-[#F4EFE6] to-[#FAF7F2] flex items-center justify-center">
+                  <span className="text-6xl group-hover:scale-110 transition-transform duration-300">{p.emoji}</span>
+                </div>
+                <div className="p-3">
+                  <h3 className="font-display font-semibold text-[#222] text-sm line-clamp-2 mb-1 group-hover:text-[#D98C1F] transition-colors">{p.name}</h3>
+                  <span className="font-bold text-[#D98C1F] text-sm">LKR {p.price.toLocaleString()}.00</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
