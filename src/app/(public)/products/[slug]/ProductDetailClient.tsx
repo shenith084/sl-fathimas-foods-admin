@@ -34,21 +34,24 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
 
   const addItem = useCartStore((state) => state.addItem);
 
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
   useEffect(() => {
     const fetchProduct = async () => {
       setLoading(true);
       try {
-        const q = query(collection(db, "products"), where("slug", "==", slug));
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-          const docData = querySnapshot.docs[0].data();
-          setProduct({ id: querySnapshot.docs[0].id, ...docData });
+        const res = await fetch(`/api/v1/products/by-slug/${slug}`);
+        const data = await res.json();
+        
+        if (data.success && data.data) {
+          setProduct(data.data);
         } else {
+          // fallback to mock data
           const localProd = fallbackProducts.find(p => p.slug === slug);
           setProduct(localProd || null);
         }
       } catch (err) {
-        console.warn("Firestore fetch error, falling back to local static catalog:", err);
+        console.warn("API fetch error, falling back to local static catalog:", err);
         const localProd = fallbackProducts.find(p => p.slug === slug);
         setProduct(localProd || null);
       } finally {
@@ -61,8 +64,8 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
   if (loading) {
     return (
       <div className="bg-[#FAF7F2] min-h-screen flex flex-col items-center justify-center py-12">
-        <div className="w-12 h-12 border-4 border-[#556B4F] border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="text-[#556B4F] font-semibold text-sm">Loading product details...</p>
+        <div className="w-12 h-12 border-4 border-[#2C4631] border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-[#2C4631] font-semibold text-sm">Loading product details...</p>
       </div>
     );
   }
@@ -79,7 +82,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
     "@type": "Product",
     name: product.name,
     description: product.description,
-    image: `${APP_URL}/og-image.png`,
+    image: product.images && product.images.length > 0 ? product.images[0] : `${APP_URL}/og-image.png`,
     sku: product.id,
     brand: {
       "@type": "Brand",
@@ -114,7 +117,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
       id: product.id,
       name: product.name,
       price: product.price,
-      emoji: product.emoji,
+      emoji: product.emoji || "📦",
       weight: product.weight,
       vacuum: vacuum && product.customizable,
     }, qty);
@@ -161,19 +164,42 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
           <div className="space-y-4">
             <div className="bg-gradient-to-br from-[#F4EFE6] to-[#FAF7F2] rounded-3xl aspect-square flex items-center justify-center shadow-md relative overflow-hidden">
               {product.badge && (
-                <span className="absolute top-4 left-4 bg-[#D98C1F] text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                <span className="absolute top-4 left-4 bg-[#D98C1F] text-white text-xs font-bold px-3 py-1.5 rounded-full z-10">
                   {product.badge}
                 </span>
               )}
-              <span className="text-[10rem] select-none" role="img" aria-label={product.name}>{product.emoji}</span>
+              {product.images && product.images.length > 0 ? (
+                <img src={product.images[activeImageIndex] || product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-[10rem] select-none" role="img" aria-label={product.name}>{product.emoji || "📦"}</span>
+              )}
             </div>
-            <div className="flex gap-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className={`flex-1 bg-gradient-to-br from-[#F4EFE6] to-[#FAF7F2] rounded-xl aspect-square flex items-center justify-center cursor-pointer border-2 transition-colors ${i === 1 ? "border-[#D98C1F]" : "border-transparent hover:border-[#D98C1F]/40"}`}>
-                  <span className="text-3xl">{product.emoji}</span>
+            
+            {/* Gallery Thumbnails */}
+            {product.images && product.images.length > 1 ? (
+              <div className="flex gap-3">
+                {product.images.map((img: string, i: number) => (
+                  <div 
+                    key={i} 
+                    onClick={() => setActiveImageIndex(i)}
+                    className={`flex-1 bg-gray-100 rounded-xl aspect-square overflow-hidden cursor-pointer border-2 transition-all duration-200 ${i === activeImageIndex ? "border-[#D98C1F] opacity-100" : "border-transparent opacity-60 hover:opacity-100"}`}
+                  >
+                    <img src={img} alt={`Thumbnail ${i+1}`} className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              /* Fallback to emojis if no images, just to keep the layout looking similar */
+              (!product.images || product.images.length === 0) ? (
+                <div className="flex gap-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className={`flex-1 bg-gradient-to-br from-[#F4EFE6] to-[#FAF7F2] rounded-xl aspect-square flex items-center justify-center cursor-pointer border-2 transition-colors ${i === 1 ? "border-[#D98C1F]" : "border-transparent hover:border-[#D98C1F]/40"}`}>
+                      <span className="text-3xl">{product.emoji || "📦"}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              ) : null
+            )}
           </div>
 
           {/* Product Info */}
@@ -212,7 +238,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
               <div className="mb-5 bg-white border border-gray-200 rounded-2xl p-4">
                 <label className="flex items-center gap-3 cursor-pointer select-none">
                   <input type="checkbox" checked={vacuum} onChange={(e) => setVacuum(e.target.checked)} className="sr-only" />
-                  <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${vacuum ? "bg-[#556B4F] border-[#556B4F]" : "border-gray-300"}`}>
+                  <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${vacuum ? "bg-[#2C4631] border-[#2C4631]" : "border-gray-300"}`}>
                     {vacuum && <Check className="w-3 h-3 text-white" />}
                   </div>
                   <div>
@@ -244,7 +270,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                 id={`product-detail-add-cart-${product.id}`}
                 onClick={handleAddToCart}
                 className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl font-semibold text-base transition-all duration-200 ${
-                  added ? "bg-[#556B4F] text-white" : "bg-[#D98C1F] hover:bg-[#B8740F] text-white shadow-lg hover:shadow-xl"
+                  added ? "bg-[#2C4631] text-white" : "bg-[#D98C1F] hover:bg-[#B8740F] text-white shadow-lg hover:shadow-xl"
                 }`}
               >
                 {added ? (
@@ -255,7 +281,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
               </button>
               <Link
                 href="/checkout"
-                className="px-6 py-4 rounded-2xl font-semibold text-base border-2 border-[#556B4F] text-[#556B4F] hover:bg-[#556B4F] hover:text-white transition-all duration-200"
+                className="px-6 py-4 rounded-2xl font-semibold text-base border-2 border-[#2C4631] text-[#2C4631] hover:bg-[#2C4631] hover:text-white transition-all duration-200"
               >
                 Buy Now
               </Link>
@@ -268,7 +294,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                 { icon: <RefreshCcw className="w-4 h-4" />, label: "Quality Guarantee" },
               ].map((b) => (
                 <div key={b.label} className="flex flex-col items-center gap-1 bg-[#F4EFE6] rounded-xl p-3 text-center">
-                  <span className="text-[#556B4F]">{b.icon}</span>
+                  <span className="text-[#2C4631]">{b.icon}</span>
                   <span className="text-[#555] text-xs font-medium">{b.label}</span>
                 </div>
               ))}
@@ -289,8 +315,16 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {related.map((p) => (
               <Link key={p.id} href={`/products/${p.slug}`} className="bg-white rounded-2xl overflow-hidden shadow-sm group block hover:shadow-md transition-shadow">
-                <div className="h-36 bg-gradient-to-br from-[#F4EFE6] to-[#FAF7F2] flex items-center justify-center">
-                  <span className="text-6xl group-hover:scale-110 transition-transform duration-300" role="img" aria-label={p.name}>{p.emoji}</span>
+                <div className="h-36 bg-gradient-to-br from-[#F4EFE6] to-[#FAF7F2] flex items-center justify-center overflow-hidden">
+                  {p.images && p.images.length > 0 ? (
+                    <img 
+                      src={p.images[0]} 
+                      alt={p.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <span className="text-6xl group-hover:scale-110 transition-transform duration-300 select-none" role="img" aria-label={p.name}>{p.emoji || "📦"}</span>
+                  )}
                 </div>
                 <div className="p-3">
                   <h3 className="font-display font-semibold text-[#222] text-sm line-clamp-2 mb-1 group-hover:text-[#D98C1F] transition-colors">{p.name}</h3>

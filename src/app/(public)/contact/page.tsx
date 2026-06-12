@@ -57,7 +57,7 @@ export default function ContactPage() {
               { icon: <Clock className="w-5 h-5" />, label: "Response Time", value: "Within 24 hours" },
             ].map((info) => (
               <div key={info.label} className="bg-white rounded-2xl p-4 flex items-start gap-4 shadow-sm">
-                <div className="w-10 h-10 bg-[#F4EFE6] rounded-xl flex items-center justify-center text-[#556B4F] flex-shrink-0">
+                <div className="w-10 h-10 bg-[#F4EFE6] rounded-xl flex items-center justify-center text-[#2C4631] flex-shrink-0">
                   {info.icon}
                 </div>
                 <div>

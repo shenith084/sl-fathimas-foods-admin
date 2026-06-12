@@ -24,6 +24,7 @@ function getAdminApp(): App {
       adminApp = initializeApp({
         credential: cert(serviceAccount),
         projectId,
+        storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "sl-fathima-s-foods.firebasestorage.app"
       });
       console.log("Firebase Admin SDK successfully initialized with Service Account Key.");
     } catch (error) {

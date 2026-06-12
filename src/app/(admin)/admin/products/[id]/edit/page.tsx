@@ -18,6 +18,8 @@ export default function EditProductPage() {
     name: "", slug: "", category: "", price: "", weight: "", shelfLife: "",
     ingredients: "", description: "", emoji: "🍛", badge: "",
     stock_count: "10", availability: "in_stock", customizable: false,
+    images: [] as string[],
+    imageFiles: [] as File[],
   });
 
   useEffect(() => {
@@ -26,7 +28,8 @@ export default function EditProductPage() {
       .then((data) => {
         if (data.success) {
           const p = data.data;
-          setForm({
+          setForm((prev) => ({
+            ...prev,
             name: p.name || "",
             slug: p.slug || "",
             category: p.category || "",
@@ -36,28 +39,42 @@ export default function EditProductPage() {
             ingredients: p.ingredients || "",
             description: p.description || "",
             emoji: p.emoji || "🍛",
+            images: p.images || [],
+            imageFiles: [],
             badge: p.badge || "",
             stock_count: String(p.stock_count ?? 0),
             availability: p.availability || "in_stock",
             customizable: p.customizable || false,
-          });
+          }));
         }
       })
       .finally(() => setFetching(false));
   }, [id]);
 
-  const update = (field: string, value: string | boolean) =>
+  const update = (field: string, value: any) =>
     setForm((f) => ({ ...f, [field]: value }));
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
+      let finalImages = (form as any).images;
+      
+      // Upload Images to Firebase Storage if new files are selected
+      const imageFiles = (form as any).imageFiles as File[] | undefined;
+      if (imageFiles && imageFiles.length > 0) {
+        const { uploadProductImage } = await import("@/lib/firebase/storage");
+        finalImages = await Promise.all(
+          imageFiles.map((file, i) => uploadProductImage(id as string, file, i))
+        );
+      }
+
       const res = await fetch(`/api/v1/products/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
+          images: finalImages,
           price: Number(form.price),
           stock_count: Number(form.stock_count),
           badge: form.badge || null,
@@ -125,16 +142,50 @@ export default function EditProductPage() {
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#555] mb-1.5">Emoji</label>
-                  <select
-                    value={form.emoji} onChange={(e) => update("emoji", e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#D98C1F] bg-white"
-                  >
-                    {EMOJIS.map((e) => <option key={e} value={e}>{e}</option>)}
-                  </select>
-                </div>
               </div>
+              
+              <div>
+                <label className="block text-xs font-semibold text-[#555] mb-1.5">Product Images (Max 3)</label>
+                <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:bg-gray-50 transition-colors">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#D98C1F]/10 file:text-[#D98C1F] hover:file:bg-[#D98C1F]/20 cursor-pointer"
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        const files = Array.from(e.target.files).slice(0, 3);
+                        update("imageFiles", files);
+                      }
+                    }}
+                  />
+                  <p className="text-xs text-gray-400 mt-2">Select new images to replace the current ones. Max 3 images.</p>
+                </div>
+
+                {/* Show new selected files preview */}
+                {(form as any).imageFiles && ((form as any).imageFiles as File[]).length > 0 ? (
+                  <div className="flex gap-2 mt-3">
+                    {((form as any).imageFiles as File[]).map((f, i) => (
+                      <div key={i} className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden relative border border-gray-200">
+                        <img src={URL.createObjectURL(f)} className="object-cover w-full h-full" alt="preview" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  /* Show existing images from database if no new files selected */
+                  (form as any).images && ((form as any).images as string[]).length > 0 && (
+                    <div className="flex gap-2 mt-3">
+                      <p className="text-xs text-gray-500 w-full mb-1">Current Images:</p>
+                      {((form as any).images as string[]).map((url, i) => (
+                        <div key={i} className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden relative border border-gray-200">
+                          <img src={url} className="object-cover w-full h-full" alt="current" />
+                        </div>
+                      ))}
+                    </div>
+                  )
+                )}
+              </div>
+
               <div>
                 <label className="block text-xs font-semibold text-[#555] mb-1.5">Description</label>
                 <textarea

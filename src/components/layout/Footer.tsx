@@ -68,12 +68,12 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="lg:col-span-1">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 mb-5">
-              <div className="w-10 h-10 bg-[#556B4F] rounded-full flex items-center justify-center text-white font-display font-bold text-sm">
-                SL
+            <Link href="/" className="flex items-center gap-3 mb-5 group">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-black overflow-hidden shadow-sm border border-white/10 group-hover:border-[#D98C1F]/50 transition-colors">
+                <img src="/logo.png" alt="Fathima's Logo" className="w-full h-full object-cover" />
               </div>
               <div className="leading-tight">
-                <div className="font-display font-bold text-white text-base tracking-wide">
+                <div className="font-display font-bold text-white text-base tracking-wide group-hover:text-[#D98C1F] transition-colors">
                   SL FATHIMA&apos;S
                 </div>
                 <div className="font-display font-semibold text-[#D98C1F] text-xs tracking-widest -mt-0.5">

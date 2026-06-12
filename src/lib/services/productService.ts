@@ -18,6 +18,7 @@ export interface AdminProduct {
   customizable: boolean;
   stock_count: number;
   availability: "in_stock" | "out_of_stock" | "pre_order";
+  images?: string[];
   deleted_at?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
@@ -44,6 +45,19 @@ export async function getProducts(includeDeleted = false): Promise<AdminProduct[
 export async function getProductById(id: string): Promise<AdminProduct | null> {
   const doc = await adminDb.collection("products").doc(id).get();
   if (!doc.exists) return null;
+  return {
+    id: doc.id,
+    ...doc.data(),
+    created_at: doc.data()?.created_at?.toDate?.()?.toISOString() || null,
+    updated_at: doc.data()?.updated_at?.toDate?.()?.toISOString() || null,
+  } as AdminProduct;
+}
+
+export async function getProductBySlug(slug: string): Promise<AdminProduct | null> {
+  const query = await adminDb.collection("products").where("slug", "==", slug).limit(1).get();
+  if (query.empty) return null;
+  
+  const doc = query.docs[0];
   return {
     id: doc.id,
     ...doc.data(),

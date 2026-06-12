@@ -83,11 +83,9 @@ export default function HomePage() {
   return (
     <>
       {/* LocalBusiness Schema.org JSON-LD */}
-      <Script
-        id="local-business-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
-        strategy="beforeInteractive"
       />
 
       {/* Hero Section */}

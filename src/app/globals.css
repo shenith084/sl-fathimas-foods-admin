@@ -8,7 +8,7 @@
   --color-saffron: #D98C1F;
   --color-saffron-light: #E8B04A;
   --color-saffron-dark: #B8740F;
-  --color-olive: #556B4F;
+  --color-olive: #2C4631;
   --color-olive-light: #7A9B76;
   --color-olive-lighter: #A3B18A;
   --color-olive-dark: #3D5038;
@@ -41,7 +41,7 @@ body {
   background: #F4EFE6;
 }
 ::-webkit-scrollbar-thumb {
-  background: #556B4F;
+  background: #2C4631;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -121,12 +121,12 @@ body {
 }
 
 .btn-secondary {
-  border: 2px solid #556B4F;
-  color: #556B4F;
+  border: 2px solid #2C4631;
+  color: #2C4631;
   transition: all 0.3s ease;
 }
 .btn-secondary:hover {
-  background: #556B4F;
+  background: #2C4631;
   color: white;
   transform: translateY(-1px);
 }

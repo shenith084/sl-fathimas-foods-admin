@@ -156,7 +156,7 @@ export default function FAQPage() {
         </div>
 
         {/* Still have questions */}
-        <div className="mt-12 bg-[#556B4F] rounded-3xl p-8 text-center text-white">
+        <div className="mt-12 bg-[#2C4631] rounded-3xl p-8 text-center text-white">
           <div className="text-4xl mb-4">💬</div>
           <h3 className="font-display font-bold text-xl mb-3">Still have questions?</h3>
           <p className="text-white/80 text-sm mb-6">

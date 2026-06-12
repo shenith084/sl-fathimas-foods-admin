@@ -33,7 +33,7 @@ export default function CustomOrdersPage() {
     return (
       <div className="bg-[#FAF7F2] min-h-screen flex items-center justify-center px-4">
         <div className="text-center max-w-md">
-          <CheckCircle className="w-16 h-16 text-[#556B4F] mx-auto mb-5" />
+          <CheckCircle className="w-16 h-16 text-[#2C4631] mx-auto mb-5" />
           <h2 className="font-display font-bold text-[#222] text-2xl mb-3">Request Received! 🎉</h2>
           <p className="text-[#666] mb-6">
             Thank you for your custom order request. We&apos;ll review your requirements and get back to you within 24 hours via WhatsApp or email.
@@ -100,7 +100,7 @@ export default function CustomOrdersPage() {
               {products.map((p) => (
                 <button type="button" key={p} onClick={() => toggleProduct(p)}
                   className={`text-left px-3 py-2 rounded-xl text-xs font-medium border transition-all duration-150 ${
-                    form.products.includes(p) ? "bg-[#556B4F] text-white border-[#556B4F]" : "bg-white border-gray-200 text-[#555] hover:border-[#556B4F]"
+                    form.products.includes(p) ? "bg-[#2C4631] text-white border-[#2C4631]" : "bg-white border-gray-200 text-[#555] hover:border-[#2C4631]"
                   }`}>
                   {p}
                 </button>

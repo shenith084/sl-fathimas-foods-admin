@@ -35,7 +35,7 @@ export default function WhyChooseUs() {
               style={{ animationDelay: `${i * 0.1}s` }}
             >
               {/* Icon circle */}
-              <div className="flex-shrink-0 w-14 h-14 rounded-full bg-[#F4EFE6] flex items-center justify-center text-[#556B4F] group-hover:bg-[#556B4F] group-hover:text-white transition-all duration-300">
+              <div className="flex-shrink-0 w-14 h-14 rounded-full bg-[#F4EFE6] flex items-center justify-center text-[#2C4631] group-hover:bg-[#2C4631] group-hover:text-white transition-all duration-300">
                 {feat.icon}
               </div>
               <div>

@@ -16,7 +16,8 @@ export interface Product {
   shelfLife: string;
   ingredients: string;
   description: string;
-  emoji: string;
+  emoji?: string;
+  images?: string[];
   badge: string | null;
   rating: number;
   reviews: number;

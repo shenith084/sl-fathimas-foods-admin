@@ -12,13 +12,13 @@ import {
   updateProfile,
   onAuthStateChanged
 } from "firebase/auth";
-import { createOrUpdateUserDoc, getUserRole } from "@/lib/services/userService";
+import { createOrUpdateUserDoc, isAdminUser } from "@/lib/services/userService";
 
 type Mode = "login" | "register" | "forgot";
 
 async function redirectByRole(user: any, fallbackRedirect: string | null, router: ReturnType<typeof useRouter>) {
-  const role = await getUserRole(user.uid, user.email);
-  if (role === "owner" || role === "staff") {
+  const isAdmin = await isAdminUser(user.uid, user.email);
+  if (isAdmin) {
     router.push("/admin/dashboard");
   } else {
     router.push(fallbackRedirect || "/products");
@@ -140,11 +140,11 @@ function AuthForm() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex flex-col items-center gap-2">
-            <div className="w-16 h-16 bg-[#556B4F] rounded-full flex items-center justify-center text-white font-display font-bold text-xl shadow-sm">
+            <div className="w-16 h-16 bg-[#2C4631] rounded-full flex items-center justify-center text-white font-display font-bold text-xl shadow-sm">
               SL
             </div>
             <div>
-              <div className="font-display font-bold text-[#556B4F] text-lg tracking-wide">SL FATHIMA&apos;S</div>
+              <div className="font-display font-bold text-[#2C4631] text-lg tracking-wide">SL FATHIMA&apos;S</div>
               <div className="font-display font-semibold text-[#D98C1F] text-xs tracking-widest">FOODS</div>
             </div>
           </div>
@@ -368,7 +368,7 @@ function AuthForm() {
 
 export default function AuthPage() {
   return (
-    <Suspense fallback={<div className="bg-[#FAF7F2] min-h-screen flex items-center justify-center text-[#556B4F] font-semibold">Loading authentication form...</div>}>
+    <Suspense fallback={<div className="bg-[#FAF7F2] min-h-screen flex items-center justify-center text-[#2C4631] font-semibold">Loading authentication form...</div>}>
       <AuthForm />
     </Suspense>
   );

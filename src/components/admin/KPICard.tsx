@@ -12,14 +12,14 @@ interface KPICardProps {
 
 const colorMap = {
   gold: "from-[#D98C1F]/10 to-[#D98C1F]/5 border-[#D98C1F]/20",
-  green: "from-[#556B4F]/10 to-[#556B4F]/5 border-[#556B4F]/20",
+  green: "from-[#2C4631]/10 to-[#2C4631]/5 border-[#2C4631]/20",
   blue: "from-blue-500/10 to-blue-500/5 border-blue-500/20",
   red: "from-red-500/10 to-red-500/5 border-red-500/20",
 };
 
 const iconColorMap = {
   gold: "bg-[#D98C1F]/15 text-[#D98C1F]",
-  green: "bg-[#556B4F]/15 text-[#556B4F]",
+  green: "bg-[#2C4631]/15 text-[#2C4631]",
   blue: "bg-blue-500/15 text-blue-600",
   red: "bg-red-500/15 text-red-500",
 };

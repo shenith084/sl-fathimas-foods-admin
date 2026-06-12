@@ -10,7 +10,7 @@ export default function CustomOrdersCTA() {
           <div className="relative bg-[#1F1F1F] rounded-3xl overflow-hidden p-8 md:p-10 flex flex-col justify-between min-h-[280px]">
             {/* Background decoration */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-[#D98C1F]/10 rounded-full -translate-y-1/4 translate-x-1/4 blur-2xl" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#556B4F]/20 rounded-full translate-y-1/4 -translate-x-1/4 blur-2xl" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#2C4631]/20 rounded-full translate-y-1/4 -translate-x-1/4 blur-2xl" />
 
             <div className="relative z-10">
               <span className="inline-block bg-[#D98C1F]/20 text-[#D98C1F] text-xs font-semibold px-3 py-1 rounded-full mb-4">
@@ -46,7 +46,7 @@ export default function CustomOrdersCTA() {
             </div>
 
             <div className="relative z-10">
-              <span className="inline-block bg-[#556B4F]/10 text-[#556B4F] text-xs font-semibold px-3 py-1 rounded-full mb-4">
+              <span className="inline-block bg-[#2C4631]/10 text-[#2C4631] text-xs font-semibold px-3 py-1 rounded-full mb-4">
                 🚚 ISLANDWIDE DELIVERY
               </span>
               <h2 className="font-display font-bold text-[#222] text-2xl md:text-3xl leading-tight mb-1">
@@ -64,7 +64,7 @@ export default function CustomOrdersCTA() {
                   { label: "Overseas", value: "Available" },
                 ].map((info) => (
                   <div key={info.label} className="text-center">
-                    <div className="font-display font-bold text-[#556B4F] text-sm">
+                    <div className="font-display font-bold text-[#2C4631] text-sm">
                       {info.value}
                     </div>
                     <div className="text-[#999] text-xs">{info.label}</div>
@@ -76,7 +76,7 @@ export default function CustomOrdersCTA() {
             <Link
               href="/contact"
               id="delivery-contact-btn"
-              className="relative z-10 inline-flex items-center gap-2 border-2 border-[#556B4F] text-[#556B4F] hover:bg-[#556B4F] hover:text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200 self-start"
+              className="relative z-10 inline-flex items-center gap-2 border-2 border-[#2C4631] text-[#2C4631] hover:bg-[#2C4631] hover:text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200 self-start"
             >
               CONTACT US
               <ArrowRight className="w-4 h-4" />

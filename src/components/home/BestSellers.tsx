@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, ShoppingCart, Star } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
@@ -14,6 +14,7 @@ export interface Product {
   oldPrice?: number;
   weight?: string;
   emoji: string;
+  images?: string[];
   badge?: "Best Seller" | "New" | "Out of Stock";
   rating?: number;
   reviewCount?: number;
@@ -85,7 +86,7 @@ const bestSellers: Product[] = [
 
 const badgeColors: Record<string, string> = {
   "Best Seller": "bg-[#D98C1F] text-white",
-  New: "bg-[#556B4F] text-white",
+  New: "bg-[#2C4631] text-white",
   "Out of Stock": "bg-gray-400 text-white",
 };
 
@@ -99,7 +100,7 @@ function ProductCard({ product }: { product: Product }) {
       id: product.id,
       name: product.name,
       price: product.price,
-      emoji: product.emoji,
+      emoji: product.emoji || "📦",
       weight: product.weight || "250g",
       vacuum: false,
     }, 1);
@@ -116,9 +117,17 @@ function ProductCard({ product }: { product: Product }) {
             {product.badge}
           </span>
         )}
-        <span className="text-7xl group-hover:scale-110 transition-transform duration-300 select-none">
-          {product.emoji}
-        </span>
+        {product.images && product.images.length > 0 ? (
+          <img 
+            src={product.images[0]} 
+            alt={product.name} 
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+          />
+        ) : (
+          <span className="text-7xl group-hover:scale-110 transition-transform duration-300 select-none">
+            {product.emoji || "📦"}
+          </span>
+        )}
         <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm text-[10px] font-bold text-[#666] px-2 py-0.5 rounded-full">
           {product.category}
         </div>
@@ -159,7 +168,7 @@ function ProductCard({ product }: { product: Product }) {
             id={`add-to-cart-${product.id}`}
             aria-label={`Add ${product.name} to cart`}
             onClick={handleAddToCart}
-            className="w-8 h-8 bg-[#556B4F] hover:bg-[#D98C1F] text-white rounded-lg flex items-center justify-center transition-colors duration-200"
+            className="w-8 h-8 bg-[#2C4631] hover:bg-[#D98C1F] text-white rounded-lg flex items-center justify-center transition-colors duration-200"
           >
             <ShoppingCart className="w-4 h-4" />
           </button>
@@ -171,6 +180,30 @@ function ProductCard({ product }: { product: Product }) {
 
 export default function BestSellers() {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [products, setProducts] = useState<Product[]>(bestSellers);
+
+  useEffect(() => {
+    fetch('/api/v1/products')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) {
+          const liveData = data.data;
+          const merged = bestSellers.map(staticProd => {
+            const liveMatch = liveData.find((p: any) => p.slug === staticProd.id || p.id === staticProd.id);
+            if (liveMatch) {
+              return {
+                ...staticProd,
+                price: liveMatch.price || staticProd.price,
+                images: liveMatch.images || undefined,
+              };
+            }
+            return staticProd;
+          });
+          setProducts(merged);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   const scroll = (dir: "left" | "right") => {
     if (scrollRef.current) {
@@ -198,7 +231,7 @@ export default function BestSellers() {
           <Link
             href="/products"
             id="best-sellers-view-all"
-            className="hidden sm:flex items-center gap-1 text-sm font-semibold text-[#556B4F] hover:text-[#D98C1F] transition-colors"
+            className="hidden sm:flex items-center gap-1 text-sm font-semibold text-[#2C4631] hover:text-[#D98C1F] transition-colors"
           >
             VIEW ALL PRODUCTS
             <ChevronRight className="w-4 h-4" />
@@ -211,7 +244,7 @@ export default function BestSellers() {
           <button
             onClick={() => scroll("left")}
             aria-label="Scroll left"
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-[#556B4F] hover:bg-[#556B4F] hover:text-white transition-all duration-200 hidden sm:flex"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-[#2C4631] hover:bg-[#2C4631] hover:text-white transition-all duration-200 hidden sm:flex"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -222,7 +255,7 @@ export default function BestSellers() {
             className="flex gap-4 overflow-x-auto pb-4 scroll-smooth"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {bestSellers.map((product) => (
+            {products.map((product) => (
               <Link key={product.id} href={`/products/${product.id}`}>
                 <ProductCard product={product} />
               </Link>
@@ -233,7 +266,7 @@ export default function BestSellers() {
           <button
             onClick={() => scroll("right")}
             aria-label="Scroll right"
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-[#556B4F] hover:bg-[#556B4F] hover:text-white transition-all duration-200 hidden sm:flex"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-[#2C4631] hover:bg-[#2C4631] hover:text-white transition-all duration-200 hidden sm:flex"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
@@ -243,7 +276,7 @@ export default function BestSellers() {
         <div className="mt-6 sm:hidden text-center">
           <Link
             href="/products"
-            className="inline-flex items-center gap-1 text-sm font-semibold text-[#556B4F] hover:text-[#D98C1F] transition-colors"
+            className="inline-flex items-center gap-1 text-sm font-semibold text-[#2C4631] hover:text-[#D98C1F] transition-colors"
           >
             VIEW ALL PRODUCTS
             <ChevronRight className="w-4 h-4" />

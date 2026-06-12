@@ -61,7 +61,7 @@ export default function ReviewsPage() {
             <div key={i} className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow duration-300">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#556B4F] rounded-full flex items-center justify-center text-white font-display font-bold text-sm flex-shrink-0">
+                  <div className="w-10 h-10 bg-[#2C4631] rounded-full flex items-center justify-center text-white font-display font-bold text-sm flex-shrink-0">
                     {r.initials}
                   </div>
                   <div>
@@ -81,7 +81,7 @@ export default function ReviewsPage() {
         </div>
 
         {/* Write a review CTA */}
-        <div className="bg-[#556B4F] rounded-3xl p-8 text-center text-white">
+        <div className="bg-[#2C4631] rounded-3xl p-8 text-center text-white">
           <div className="text-4xl mb-4">✍️</div>
           <h2 className="font-display font-bold text-2xl mb-3">Tried Our Products?</h2>
           <p className="text-white/80 mb-6">Share your experience and help other customers discover the joy of homemade Sri Lankan flavours.</p>

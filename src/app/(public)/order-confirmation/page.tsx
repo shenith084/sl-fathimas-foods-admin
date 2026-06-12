@@ -17,8 +17,8 @@ export default async function OrderConfirmationPage({ searchParams }: PageProps)
       <div className="max-w-lg w-full text-center">
         {/* Success icon */}
         <div className="flex justify-center mb-6">
-          <div className="w-20 h-20 bg-[#556B4F]/10 rounded-full flex items-center justify-center">
-            <CheckCircle className="w-12 h-12 text-[#556B4F]" />
+          <div className="w-20 h-20 bg-[#2C4631]/10 rounded-full flex items-center justify-center">
+            <CheckCircle className="w-12 h-12 text-[#2C4631]" />
           </div>
         </div>
 
@@ -79,7 +79,7 @@ export default async function OrderConfirmationPage({ searchParams }: PageProps)
           <Link
             href="/products"
             id="order-confirm-continue-shopping"
-            className="flex-1 border-2 border-[#556B4F] text-[#556B4F] hover:bg-[#556B4F] hover:text-white font-semibold py-3.5 rounded-2xl transition-all duration-200 text-center"
+            className="flex-1 border-2 border-[#2C4631] text-[#2C4631] hover:bg-[#2C4631] hover:text-white font-semibold py-3.5 rounded-2xl transition-all duration-200 text-center"
           >
             Continue Shopping
           </Link>

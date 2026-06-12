@@ -34,7 +34,7 @@ const packs = [
     emoji: "🎀",
     badge: "Best Value",
     color: "from-green-50 to-emerald-50",
-    border: "border-[#556B4F]/30",
+    border: "border-[#2C4631]/30",
   },
   {
     id: "gift-pack-large",
@@ -53,7 +53,7 @@ export default function GiftPacksPage() {
   return (
     <div className="bg-[#FAF7F2] min-h-screen">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#556B4F] to-[#3D5038] text-white py-16 px-4 text-center">
+      <div className="bg-gradient-to-br from-[#2C4631] to-[#1E3322] text-white py-16 px-4 text-center">
         <div className="max-w-3xl mx-auto">
           <div className="text-5xl mb-4">🎁</div>
           <h1 className="font-display font-bold text-3xl md:text-5xl mb-4">
@@ -82,7 +82,7 @@ export default function GiftPacksPage() {
                 <div className="space-y-1.5 mb-5">
                   {pack.items.map((item) => (
                     <div key={item} className="flex items-center gap-2 text-sm text-[#555]">
-                      <span className="text-[#556B4F]">✓</span>
+                      <span className="text-[#2C4631]">✓</span>
                       {item}
                     </div>
                   ))}

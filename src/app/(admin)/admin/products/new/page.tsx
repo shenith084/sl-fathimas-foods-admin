@@ -16,9 +16,10 @@ export default function NewProductPage() {
     name: "", slug: "", category: "", price: "", weight: "", shelfLife: "",
     ingredients: "", description: "", emoji: "🍛", badge: "",
     stock_count: "10", availability: "in_stock", customizable: false,
+    imageFiles: [] as File[],
   });
 
-  const update = (field: string, value: string | boolean) =>
+  const update = (field: string, value: any) =>
     setForm((f) => ({ ...f, [field]: value }));
 
   const generateSlug = (name: string) =>
@@ -47,6 +48,24 @@ export default function NewProductPage() {
       });
       const data = await res.json();
       if (data.success) {
+        const productId = data.data.id;
+        
+        // Upload Images to Firebase Storage
+        const imageFiles = form.imageFiles as File[] | undefined;
+        if (imageFiles && imageFiles.length > 0) {
+          const { uploadProductImage } = await import("@/lib/firebase/storage");
+          const imageUrls = await Promise.all(
+            imageFiles.map((file, i) => uploadProductImage(productId, file, i))
+          );
+          
+          // Update product with the uploaded image URLs
+          await fetch(`/api/v1/products/${productId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ images: imageUrls }),
+          });
+        }
+        
         router.push("/admin/products");
       } else {
         alert("Failed to create product: " + data.message);
@@ -108,18 +127,35 @@ export default function NewProductPage() {
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-[#555] mb-1.5">Emoji</label>
-                  <select
-                    value={form.emoji}
-                    onChange={(e) => update("emoji", e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#D98C1F] bg-white"
-                  >
-                    {EMOJIS.map((e) => (
-                      <option key={e} value={e}>{e}</option>
-                    ))}
-                  </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#555] mb-1.5">Product Images (Max 3)</label>
+                <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:bg-gray-50 transition-colors">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#D98C1F]/10 file:text-[#D98C1F] hover:file:bg-[#D98C1F]/20 cursor-pointer"
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        const files = Array.from(e.target.files).slice(0, 3);
+                        update("imageFiles", files);
+                      }
+                    }}
+                  />
+                  <p className="text-xs text-gray-400 mt-2">Select 1 to 3 images from your device. They will be uploaded when you click Create.</p>
                 </div>
+                {form.imageFiles && (form.imageFiles as File[]).length > 0 && (
+                  <div className="flex gap-2 mt-3">
+                    {(form.imageFiles as File[]).map((f, i) => (
+                      <div key={i} className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden relative border border-gray-200">
+                        {/* A tiny preview of the selected image using objectURL */}
+                        <img src={URL.createObjectURL(f)} className="object-cover w-full h-full" alt="preview" />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div>

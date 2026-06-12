@@ -1,15 +1,15 @@
 import Link from "next/link";
 
 const categories = [
-  { label: "Biriyani Kit", slug: "biriyani-kit", emoji: "🍛", color: "bg-amber-100" },
-  { label: "Ghee Rice", slug: "ghee-rice-combo-kit", emoji: "🍚", color: "bg-yellow-100" },
-  { label: "Sambals", slug: "sambals", emoji: "🌶️", color: "bg-red-100" },
-  { label: "Pickles", slug: "pickles", emoji: "🥒", color: "bg-green-100" },
-  { label: "Seenima", slug: "seenima", emoji: "🫙", color: "bg-orange-100" },
-  { label: "Umbalakada", slug: "umbalakada", emoji: "🐠", color: "bg-blue-100" },
-  { label: "Beef Products", slug: "beef-products", emoji: "🥩", color: "bg-rose-100" },
-  { label: "Gift Packs", slug: "gift-packs", emoji: "🎁", color: "bg-purple-100" },
-  { label: "Custom Orders", slug: "custom-orders", emoji: "✨", color: "bg-teal-100" },
+  { label: "Biriyani Kit", slug: "biriyani-kit", image: "/categories/biriyani.png", color: "bg-amber-100" },
+  { label: "Ghee Rice", slug: "ghee-rice-combo-kit", image: "/categories/ghee_rice.png", color: "bg-yellow-100" },
+  { label: "Sambals", slug: "sambals", image: "/categories/sambals.png", color: "bg-red-100" },
+  { label: "Pickles", slug: "pickles", image: "/categories/pickles.png", color: "bg-green-100" },
+  { label: "Seenima", slug: "seenima", image: "/categories/seenima.png", color: "bg-orange-100" },
+  { label: "Umbalakada", slug: "umbalakada", image: "/categories/umbalakada.png", color: "bg-blue-100" },
+  { label: "Beef Products", slug: "beef-products", image: "/categories/beef.png", color: "bg-rose-100" },
+  { label: "Gift Packs", slug: "gift-packs", image: "/categories/gift_packs.png", color: "bg-purple-100" },
+  { label: "Custom Orders", slug: "custom-orders", image: "/categories/custom_orders.png", color: "bg-teal-100" },
 ];
 
 export default function CategoryShowcase() {
@@ -32,9 +32,9 @@ export default function CategoryShowcase() {
             >
               {/* Circle */}
               <div
-                className={`w-16 h-16 md:w-20 md:h-20 rounded-full ${cat.color} flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-110 transition-all duration-300 border-2 border-white`}
+                className={`w-16 h-16 md:w-20 md:h-20 rounded-full ${cat.color} flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-110 transition-all duration-300 border-2 border-white overflow-hidden`}
               >
-                <span className="text-3xl md:text-4xl">{cat.emoji}</span>
+                <img src={cat.image} alt={cat.label} className="w-full h-full object-cover" />
               </div>
               {/* Label */}
               <span className="text-[#444] text-xs font-medium text-center leading-tight group-hover:text-[#D98C1F] transition-colors duration-200">

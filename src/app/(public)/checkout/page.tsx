@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Lock, Check } from "lucide-react";
+import { ChevronRight, Lock, Check, Loader2 } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { auth, db } from "@/lib/firebase/client";
 import { onAuthStateChanged } from "firebase/auth";
@@ -32,6 +32,7 @@ export default function CheckoutPage() {
     address: "", city: "", district: "", postalCode: "",
     paymentMethod: "cod", bankReceiptNote: "",
   });
+  const [errorMsg, setErrorMsg] = useState("");
 
   const update = (field: string, value: string) => setForm((f) => ({ ...f, [field]: value }));
 
@@ -72,6 +73,8 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async () => {
     setLoading(true);
+    setErrorMsg("");
+    
     const orderData = {
       items: items.map(item => ({
         id: item.id,
@@ -101,26 +104,28 @@ export default function CheckoutPage() {
       total,
       userId: auth.currentUser?.uid || "guest",
       status: "pending",
-      createdAt: serverTimestamp()
     };
 
-    let orderId = `SF-${Math.floor(100000 + Math.random() * 900000)}`;
-
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Timeout")), 3500)
-    );
-
     try {
-      const docRef = await Promise.race([
-        addDoc(collection(db, "orders"), orderData),
-        timeoutPromise
-      ]) as any;
-      orderId = docRef.id;
-    } catch (err) {
-      console.warn("Firestore order submission failed or timed out, placing local mock order:", err);
-    } finally {
+      const res = await fetch("/api/v1/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderData),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || "Failed to process order. Please try again.");
+      }
+
       clearCart();
-      router.push(`/order-confirmation?orderId=${orderId}`);
+      router.push(`/order-confirmation?orderId=${json.data.id}`);
+    } catch (err: any) {
+      console.error("Order submission failed:", err);
+      setErrorMsg(err.message || "An unexpected error occurred. Please contact support.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -140,7 +145,7 @@ export default function CheckoutPage() {
           <div className="flex items-center gap-2">
             {steps.map((s, i) => (
               <div key={s} className="flex items-center gap-2">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${i < step ? "bg-[#556B4F] text-white" : i === step - 1 ? "bg-[#D98C1F] text-white" : "bg-gray-100 text-[#999]"}`}>
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${i < step ? "bg-[#2C4631] text-white" : i === step - 1 ? "bg-[#D98C1F] text-white" : "bg-gray-100 text-[#999]"}`}>
                   {i < step - 1 ? <Check className="w-4 h-4" /> : i + 1}
                 </div>
                 <span className={`text-xs font-medium hidden sm:block ${i === step - 1 ? "text-[#D98C1F]" : "text-[#999]"}`}>{s}</span>
@@ -260,19 +265,35 @@ export default function CheckoutPage() {
                       ))}
                     </div>
                   </div>
-                </div>
+                  {/* Error Message */}
+                  {errorMsg && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm mb-6 flex items-start gap-3">
+                      <div className="mt-0.5">⚠️</div>
+                      <div>
+                        <p className="font-semibold">Order Failed</p>
+                        <p className="opacity-90">{errorMsg}</p>
+                      </div>
+                    </div>
+                  )}
 
-                <div className="flex gap-3">
-                  <button onClick={() => setStep(1)} className="flex-1 border-2 border-gray-200 text-[#555] font-semibold py-4 rounded-2xl hover:border-gray-300 transition-colors">
-                    ← Back
-                  </button>
-                  <button
-                    disabled={loading}
-                    onClick={handlePlaceOrder}
-                    className="flex-2 flex-1 block text-center bg-[#D98C1F] hover:bg-[#B8740F] text-white font-bold py-4 rounded-2xl transition-all duration-200 shadow-md disabled:bg-gray-300"
-                  >
-                    {loading ? "Placing Order..." : "Place Order →"}
-                  </button>
+                  {/* Actions */}
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => setStep(1)}
+                      className="w-1/3 py-3.5 rounded-xl font-bold text-[#555] bg-gray-100 hover:bg-gray-200 transition-colors"
+                      disabled={loading}
+                    >
+                      Back
+                    </button>
+                    <button
+                      onClick={handlePlaceOrder}
+                      disabled={loading}
+                      className="w-2/3 bg-[#D98C1F] hover:bg-[#B8740F] text-white py-3.5 rounded-xl font-bold transition-all shadow-md hover:shadow-lg disabled:opacity-70 flex items-center justify-center gap-2"
+                    >
+                      {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                      {loading ? "Processing Order..." : "Confirm & Place Order"}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

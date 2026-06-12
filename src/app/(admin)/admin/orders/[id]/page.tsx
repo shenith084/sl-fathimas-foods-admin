@@ -92,7 +92,7 @@ export default function OrderDetailPage() {
           {ORDER_WORKFLOW.map((s, i) => (
             <div key={s} className="flex items-center gap-1">
               <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                i < currentIndex ? "bg-[#556B4F] text-white" :
+                i < currentIndex ? "bg-[#2C4631] text-white" :
                 i === currentIndex ? "bg-[#D98C1F] text-white" :
                 "bg-gray-100 text-[#aaa]"
               }`}>

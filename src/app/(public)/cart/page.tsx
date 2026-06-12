@@ -105,7 +105,7 @@ export default function CartPage() {
                   </div>
 
                   {item.vacuum && (
-                    <span className="inline-block mt-1 text-[10px] bg-[#556B4F]/10 text-[#556B4F] px-2 py-0.5 rounded-full font-medium">
+                    <span className="inline-block mt-1 text-[10px] bg-[#2C4631]/10 text-[#2C4631] px-2 py-0.5 rounded-full font-medium">
                       + Vacuum Packaging (+LKR 50)
                     </span>
                   )}
@@ -133,7 +133,7 @@ export default function CartPage() {
             {/* Continue shopping */}
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 text-sm font-medium text-[#556B4F] hover:text-[#D98C1F] transition-colors"
+              className="inline-flex items-center gap-2 text-sm font-medium text-[#2C4631] hover:text-[#D98C1F] transition-colors"
             >
               ← Continue Shopping
             </Link>
@@ -156,7 +156,7 @@ export default function CartPage() {
                     className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-[#D98C1F] transition-colors"
                   />
                 </div>
-                <button className="bg-[#556B4F] hover:bg-[#3D5038] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">
+                <button className="bg-[#2C4631] hover:bg-[#1E3322] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">
                   Apply
                 </button>
               </div>

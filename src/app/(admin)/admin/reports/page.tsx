@@ -138,8 +138,8 @@ export default function AdminReportsPage() {
               <p className="text-2xl font-bold text-[#D98C1F]">{report?.todayOrders || 0}</p>
               <p className="text-xs text-[#888] mt-1">Orders Today</p>
             </div>
-            <div className="bg-[#556B4F]/5 rounded-xl p-4 text-center">
-              <p className="text-2xl font-bold text-[#556B4F]">LKR {(report?.todayRevenue || 0).toLocaleString()}</p>
+            <div className="bg-[#2C4631]/5 rounded-xl p-4 text-center">
+              <p className="text-2xl font-bold text-[#2C4631]">LKR {(report?.todayRevenue || 0).toLocaleString()}</p>
               <p className="text-xs text-[#888] mt-1">Revenue Today</p>
             </div>
           </div>
