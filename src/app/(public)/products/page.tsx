@@ -55,23 +55,27 @@ function ProductsContent() {
     setSearchTerm(activeSearchQuery);
   }, [activeSearchQuery]);
 
-  // Fetch Firestore Data
+  // Fetch Live Data via API
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const catSnapshot = await getDocs(collection(db, "categories"));
-        const cats = catSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        if (cats.length > 0) {
-          setDbCategories(cats);
-        }
-
-        const prodSnapshot = await getDocs(collection(db, "products"));
-        const prods = prodSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        if (prods.length > 0) {
-          setDbProducts(prods);
+        const res = await fetch("/api/v1/products");
+        const json = await res.json();
+        if (json.success && json.data.length > 0) {
+          setDbProducts(json.data);
+          
+          // Extract unique categories from the live products
+          const uniqueCats = Array.from(new Set(json.data.map((p: any) => p.category)));
+          const liveCats = uniqueCats.map(name => ({
+            id: (name as string).toLowerCase().replace(/\s+/g, '-'),
+            name: name
+          }));
+          if (liveCats.length > 0) {
+            setDbCategories(liveCats);
+          }
         }
       } catch (err) {
-        console.warn("Firestore fetch failed, falling back to local static catalog data:", err);
+        console.warn("API fetch failed, falling back to local static catalog data:", err);
       }
     };
     fetchData();
