@@ -4,6 +4,12 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Customer Reviews",
   description: "Read what our customers say about SL Fathima's Foods. Authentic homemade Sri Lankan food loved by 1000+ happy customers.",
+  alternates: { canonical: "/reviews" },
+  openGraph: {
+    title: "Customer Reviews | SL Fathima's Foods",
+    description: "Read verified customer reviews about our authentic Sri Lankan homemade food products.",
+    url: "/reviews",
+  },
 };
 
 const reviews = [

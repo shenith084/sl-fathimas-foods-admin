@@ -5,6 +5,12 @@ import { ArrowRight, Gift } from "lucide-react";
 export const metadata: Metadata = {
   title: "Gift Packs",
   description: "Send the gift of authentic Sri Lankan homemade flavours. SL Fathima's Foods gift packs — perfect for any occasion.",
+  alternates: { canonical: "/gift-packs" },
+  openGraph: {
+    title: "Gift Packs | SL Fathima's Foods",
+    description: "Send authentic Sri Lankan homemade food gift packs to your loved ones. Perfect for any occasion.",
+    url: "/gift-packs",
+  },
 };
 
 const packs = [

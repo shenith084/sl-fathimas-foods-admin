@@ -5,6 +5,12 @@ export const metadata: Metadata = {
   title: "About Us",
   description:
     "Learn about SL Fathima's Foods — our story, our passion for authentic Sri Lankan homemade food made with natural ingredients and traditional family recipes.",
+  alternates: { canonical: "/about" },
+  openGraph: {
+    title: "About SL Fathima's Foods",
+    description: "Our story of bringing authentic Sri Lankan homemade food to your table. 100% natural ingredients, no preservatives.",
+    url: "/about",
+  },
 };
 
 const values = [
