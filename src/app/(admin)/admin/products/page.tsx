@@ -63,23 +63,17 @@ export default function AdminProductsPage() {
   async function handleSeed() {
     setSeeding(true);
     try {
-      const batch = writeBatch(db);
-      mockProducts.forEach((prod) => {
-        const ref = doc(collection(db, "products"), prod.id);
-        batch.set(ref, {
-          ...prod,
-          stock_count: 50,
-          availability: "in_stock",
-          created_at: new Date(),
-          updated_at: new Date(),
-          deleted_at: null,
-        });
-      });
-      await batch.commit();
+      const res = await fetch("/api/seed");
+      const data = await res.json();
+      
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to seed via API");
+      }
+      
       await loadProducts();
     } catch (err) {
       console.error("Failed to seed products", err);
-      alert("Failed to seed products. Check your Firestore rules.");
+      alert("Failed to seed products. Please check server logs.");
     } finally {
       setSeeding(false);
     }
