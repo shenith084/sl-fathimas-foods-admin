@@ -59,18 +59,25 @@ function ProductsContent() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch products
-        const resProd = await fetch("/api/v1/products");
-        const jsonProd = await resProd.json();
-        if (jsonProd.success && jsonProd.data.length > 0) {
-          setDbProducts(jsonProd.data);
-        }
-
-        // Fetch categories
-        const resCat = await fetch("/api/v1/categories");
-        const jsonCat = await resCat.json();
-        if (jsonCat.success && jsonCat.data.length > 0) {
-          setDbCategories(jsonCat.data);
+        const res = await fetch("/api/v1/products");
+        const json = await res.json();
+        if (json.success && json.data.length > 0) {
+          setDbProducts(json.data);
+          
+          // Extract unique categories from the live products
+          const uniqueCats = Array.from(new Set(json.data.map((p: any) => p.category)));
+          const liveCats = uniqueCats.map((name: any) => {
+            const slug = name.toLowerCase().replace(/\s+/g, '-');
+            return {
+              id: slug,
+              slug: slug,
+              name: name,
+              emoji: "📦"
+            };
+          });
+          if (liveCats.length > 0) {
+            setDbCategories(liveCats);
+          }
         }
       } catch (err) {
         console.warn("API fetch failed, falling back to local static catalog data:", err);

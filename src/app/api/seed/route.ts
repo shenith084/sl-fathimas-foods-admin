@@ -278,16 +278,10 @@ export async function GET() {
     const batch = adminDb.batch();
 
     // Seed Categories
-    const categoriesCollection = adminDb.collection("categories");
-    categories.forEach((cat, index) => {
-      const ref = categoriesCollection.doc(cat.id);
-      batch.set(ref, {
-        ...cat,
-        sort_order: index,
-        created_at: new Date(),
-        updated_at: new Date()
-      });
-    });
+    for (const cat of categories) {
+      const docRef = adminDb.collection("categories").doc(cat.id);
+      batch.set(docRef, cat);
+    }
 
     // Seed Products
     for (const prod of products) {

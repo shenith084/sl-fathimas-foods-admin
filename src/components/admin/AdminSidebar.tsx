@@ -4,13 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Package, ShoppingCart, Users, BarChart2,
-  Star, FileText, Settings, Shield, Box, ChevronRight, Tags
+  Star, FileText, Settings, Shield, Box, ChevronRight,
 } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Products", href: "/admin/products", icon: Package },
-  { label: "Categories", href: "/admin/categories", icon: Tags },
   { label: "Orders", href: "/admin/orders", icon: ShoppingCart },
   { label: "Customers", href: "/admin/customers", icon: Users },
   { label: "Stock", href: "/admin/stock", icon: Box },
