@@ -66,10 +66,15 @@ function ProductsContent() {
           
           // Extract unique categories from the live products
           const uniqueCats = Array.from(new Set(json.data.map((p: any) => p.category)));
-          const liveCats = uniqueCats.map(name => ({
-            id: (name as string).toLowerCase().replace(/\s+/g, '-'),
-            name: name
-          }));
+          const liveCats = uniqueCats.map((name: any) => {
+            const slug = name.toLowerCase().replace(/\s+/g, '-');
+            return {
+              id: slug,
+              slug: slug,
+              name: name,
+              emoji: "📦"
+            };
+          });
           if (liveCats.length > 0) {
             setDbCategories(liveCats);
           }
