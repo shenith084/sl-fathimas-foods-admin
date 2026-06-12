@@ -24,22 +24,21 @@ export interface AdminProduct {
 }
 
 export async function getProducts(includeDeleted = false): Promise<AdminProduct[]> {
-  let query = adminDb.collection("products").orderBy("created_at", "desc");
-
-  if (!includeDeleted) {
-    query = adminDb
-      .collection("products")
-      .where("deleted_at", "==", null)
-      .orderBy("created_at", "desc");
-  }
-
+  const query = adminDb.collection("products").orderBy("created_at", "desc");
   const snapshot = await query.get();
-  return snapshot.docs.map((doc) => ({
+  
+  let products = snapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
     created_at: doc.data().created_at?.toDate?.()?.toISOString() || null,
     updated_at: doc.data().updated_at?.toDate?.()?.toISOString() || null,
   })) as AdminProduct[];
+
+  if (!includeDeleted) {
+    products = products.filter(p => p.deleted_at === null || p.deleted_at === undefined);
+  }
+
+  return products;
 }
 
 export async function getProductById(id: string): Promise<AdminProduct | null> {
