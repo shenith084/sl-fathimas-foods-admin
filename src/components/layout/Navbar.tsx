@@ -19,6 +19,8 @@ import { auth, db } from "@/lib/firebase/client";
 import { onAuthStateChanged, signOut, User as FirebaseUser } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
+import { getUserRole } from "@/lib/services/userService";
+
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -34,12 +36,8 @@ export default function Navbar() {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       if (user) {
-        try {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          setUserRole(userDoc.exists() ? (userDoc.data().role || "customer") : "customer");
-        } catch {
-          setUserRole("customer");
-        }
+        const role = await getUserRole(user.uid, user.email);
+        setUserRole(role);
       } else {
         setUserRole(null);
       }

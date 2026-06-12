@@ -5,11 +5,15 @@ export type UserRole = "owner" | "staff" | "customer";
 
 const ADMIN_EMAILS = ["admin@slfathimasfoods.com"];
 
-export async function getUserRole(uid: string): Promise<UserRole> {
+export async function getUserRole(uid: string, email?: string | null): Promise<UserRole> {
+  if (email && ADMIN_EMAILS.includes(email)) return "owner";
+  
   try {
     const userDoc = await getDoc(doc(db, "users", uid));
     if (userDoc.exists()) {
-      return (userDoc.data().role as UserRole) || "customer";
+      const data = userDoc.data();
+      if (data.email && ADMIN_EMAILS.includes(data.email)) return "owner";
+      return (data.role as UserRole) || "customer";
     }
     return "customer";
   } catch {

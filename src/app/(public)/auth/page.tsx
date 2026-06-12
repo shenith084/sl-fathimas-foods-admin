@@ -16,8 +16,8 @@ import { createOrUpdateUserDoc, getUserRole } from "@/lib/services/userService";
 
 type Mode = "login" | "register" | "forgot";
 
-async function redirectByRole(uid: string, fallbackRedirect: string | null, router: ReturnType<typeof useRouter>) {
-  const role = await getUserRole(uid);
+async function redirectByRole(user: any, fallbackRedirect: string | null, router: ReturnType<typeof useRouter>) {
+  const role = await getUserRole(user.uid, user.email);
   if (role === "owner" || role === "staff") {
     router.push("/admin/dashboard");
   } else {
@@ -41,7 +41,7 @@ function AuthForm() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        await redirectByRole(user.uid, redirect, router);
+        await redirectByRole(user, redirect, router);
       }
     });
     return () => unsubscribe();
@@ -58,7 +58,7 @@ function AuthForm() {
       // Ensure user document exists in Firestore
       await createOrUpdateUserDoc(userCred.user.uid, form.email, userCred.user.displayName);
       // Route by role
-      await redirectByRole(userCred.user.uid, redirect, router);
+      await redirectByRole(userCred.user, redirect, router);
     } catch (err: any) {
       console.error("Login error:", err);
       let msg = "Failed to sign in. Please check your credentials.";

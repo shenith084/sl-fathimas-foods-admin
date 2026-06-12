@@ -6,6 +6,7 @@ import { auth } from "@/lib/firebase/client";
 import { onAuthStateChanged } from "firebase/auth";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
+import { getUserRole } from "@/lib/services/userService";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -13,10 +14,18 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         router.push("/auth?redirect=" + encodeURIComponent(pathname));
+        return;
       }
+      
+      const role = await getUserRole(user.uid);
+      if (role !== "owner" && role !== "staff") {
+        router.push("/products"); // Kick customers out of admin
+        return;
+      }
+
       setChecking(false);
     });
     return () => unsubscribe();
