@@ -17,7 +17,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Enable experimental features if needed
+  // Firebase Admin SDK must run on server only (not bundled)
+  serverExternalPackages: ["firebase-admin"],
   experimental: {},
 };
 

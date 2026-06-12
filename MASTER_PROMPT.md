@@ -117,6 +117,7 @@ Justification:
 | Checkout | Shipping details + payment method selection |
 | Order Confirmation | Post-order success page |
 | Auth Pages | Login / Register / Forgot Password |
+| customer Dashbord|tracking oder / oder list / profile edit / change password |
 
 ### 2.2 UI/UX DESIGN SYSTEM (MANDATORY)
 

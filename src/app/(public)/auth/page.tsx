@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Shield } from "lucide-react";
 import { auth } from "@/lib/firebase/client";
 import {
   signInWithEmailAndPassword,
@@ -12,8 +12,18 @@ import {
   updateProfile,
   onAuthStateChanged
 } from "firebase/auth";
+import { createOrUpdateUserDoc, getUserRole } from "@/lib/services/userService";
 
 type Mode = "login" | "register" | "forgot";
+
+async function redirectByRole(uid: string, fallbackRedirect: string | null, router: ReturnType<typeof useRouter>) {
+  const role = await getUserRole(uid);
+  if (role === "owner" || role === "staff") {
+    router.push("/admin/dashboard");
+  } else {
+    router.push(fallbackRedirect || "/products");
+  }
+}
 
 function AuthForm() {
   const router = useRouter();
@@ -27,11 +37,11 @@ function AuthForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Redirect if already logged in
+  // Redirect if already logged in — check role first
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        router.push(redirect || "/products");
+        await redirectByRole(user.uid, redirect, router);
       }
     });
     return () => unsubscribe();
@@ -44,14 +54,16 @@ function AuthForm() {
     setError("");
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, form.email, form.password);
-      router.push(redirect || "/products");
+      const userCred = await signInWithEmailAndPassword(auth, form.email, form.password);
+      // Ensure user document exists in Firestore
+      await createOrUpdateUserDoc(userCred.user.uid, form.email, userCred.user.displayName);
+      // Route by role
+      await redirectByRole(userCred.user.uid, redirect, router);
     } catch (err: any) {
       console.error("Login error:", err);
-      // Clean up common firebase errors
       let msg = "Failed to sign in. Please check your credentials.";
       if (err.code === "auth/configuration-not-found") {
-        msg = "Email/Password sign-in provider is not enabled in your Firebase console. Please visit Firebase Console > Authentication > Sign-in method tab and enable 'Email/Password' to resolve this.";
+        msg = "Email/Password sign-in is not enabled. Please enable it in Firebase Console → Authentication → Sign-in method.";
       } else if (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
         msg = "Invalid email or password. Please try again.";
       } else if (err.code === "auth/invalid-email") {
@@ -73,17 +85,22 @@ function AuthForm() {
     setLoading(true);
     try {
       const userCred = await createUserWithEmailAndPassword(auth, form.email, form.password);
-      await updateProfile(userCred.user, {
-        displayName: form.name
-      });
-      router.push(redirect || "/products");
+      await updateProfile(userCred.user, { displayName: form.name });
+      // Create user document + auto-assign role based on email
+      const role = await createOrUpdateUserDoc(userCred.user.uid, form.email, form.name);
+      // Route by assigned role
+      if (role === "owner" || role === "staff") {
+        router.push("/admin/dashboard");
+      } else {
+        router.push(redirect || "/products");
+      }
     } catch (err: any) {
       console.error("Registration error:", err);
       let msg = "Failed to create account. Please try again.";
       if (err.code === "auth/configuration-not-found") {
-        msg = "Email/Password registration is not enabled in your Firebase console. Please visit Firebase Console > Authentication > Sign-in method tab and enable 'Email/Password' to resolve this.";
+        msg = "Email/Password registration is not enabled. Please enable it in Firebase Console → Authentication → Sign-in method.";
       } else if (err.code === "auth/email-already-in-use") {
-        msg = "An account with this email address already exists.";
+        msg = "An account with this email already exists. Please sign in instead.";
       } else if (err.code === "auth/weak-password") {
         msg = "Password should be at least 6 characters.";
       } else if (err.code === "auth/invalid-email") {
@@ -115,6 +132,7 @@ function AuthForm() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="bg-[#FAF7F2] min-h-screen flex items-center justify-center px-4 py-12">

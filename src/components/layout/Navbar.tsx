@@ -3,25 +3,11 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Search, ShoppingCart, User, ChevronDown } from "lucide-react";
+import { Menu, X, Search, ShoppingCart, User, LayoutDashboard, Package, LogOut } from "lucide-react";
 
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Shop", href: "/products" },
-  {
-    label: "Categories",
-    href: "/categories",
-    children: [
-      { label: "All Categories", href: "/categories" },
-      { label: "Biriyani Kit", href: "/products?category=biriyani-kit" },
-      { label: "Ghee Rice Combo", href: "/products?category=ghee-rice-combo-kit" },
-      { label: "Sambals", href: "/products?category=sambals" },
-      { label: "Pickles", href: "/products?category=pickles" },
-      { label: "Seenima", href: "/products?category=seenima" },
-      { label: "Umbalakada", href: "/products?category=umbalakada" },
-      { label: "Beef Products", href: "/products?category=beef-products" },
-    ],
-  },
   { label: "Gift Packs", href: "/gift-packs" },
   { label: "Custom Orders", href: "/custom-orders" },
   { label: "About Us", href: "/about" },
@@ -29,14 +15,15 @@ const navLinks = [
 ];
 
 import { useCartStore } from "@/store/cartStore";
-import { auth } from "@/lib/firebase/client";
+import { auth, db } from "@/lib/firebase/client";
 import { onAuthStateChanged, signOut, User as FirebaseUser } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [authDropdown, setAuthDropdown] = useState(false);
   const pathname = usePathname();
   
@@ -44,8 +31,18 @@ export default function Navbar() {
   const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
+      if (user) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          setUserRole(userDoc.exists() ? (userDoc.data().role || "customer") : "customer");
+        } catch {
+          setUserRole("customer");
+        }
+      } else {
+        setUserRole(null);
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -132,45 +129,21 @@ export default function Navbar() {
               {navLinks.map((link) => {
                 const isActive = pathname === link.href || (link.href !== "/" && pathname?.startsWith(link.href));
                 return (
-                  <div
+                  <Link
                     key={link.label}
-                    className="relative"
-                    onMouseEnter={() => link.children && setActiveDropdown(link.label)}
-                    onMouseLeave={() => setActiveDropdown(null)}
+                    href={link.href}
+                    className={`px-3 py-2 text-sm font-medium transition-colors relative group ${
+                      isActive ? "text-[#D98C1F]" : "text-[#222222] hover:text-[#D98C1F]"
+                    }`}
                   >
-                    <Link
-                      href={link.href}
-                      className={`flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors relative group ${
-                        isActive ? "text-[#D98C1F]" : "text-[#222222] hover:text-[#D98C1F]"
-                      }`}
-                    >
-                      {link.label}
-                      {link.children && (
-                        <ChevronDown className="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-180" />
-                      )}
-                      {isActive && (
-                        <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-[#D98C1F] rounded-full" />
-                      )}
-                      {!isActive && (
-                        <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-[#D98C1F] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 rounded-full" />
-                      )}
-                    </Link>
-
-                    {/* Dropdown */}
-                    {link.children && activeDropdown === link.label && (
-                      <div className="absolute top-full left-0 mt-1 w-52 bg-white rounded-xl shadow-xl border border-gray-100 py-2 animate-fade-in">
-                        {link.children.map((child) => (
-                          <Link
-                            key={child.label}
-                            href={child.href}
-                            className="block px-4 py-2.5 text-sm text-[#444] hover:text-[#D98C1F] hover:bg-[#FAF7F2] transition-colors"
-                          >
-                            {child.label}
-                          </Link>
-                        ))}
-                      </div>
+                    {link.label}
+                    {isActive && (
+                      <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-[#D98C1F] rounded-full" />
                     )}
-                  </div>
+                    {!isActive && (
+                      <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-[#D98C1F] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 rounded-full" />
+                    )}
+                  </Link>
                 );
               })}
             </div>
@@ -192,22 +165,52 @@ export default function Navbar() {
                     className="p-2 rounded-lg text-[#555] hover:text-[#D98C1F] hover:bg-[#FAF7F2] transition-colors flex items-center justify-center"
                     aria-label="User account menu"
                   >
-                    <div className="w-7 h-7 rounded-full bg-[#556B4F] hover:bg-[#D98C1F] text-white flex items-center justify-center text-xs font-bold transition-colors shadow-sm">
+                    <div className={`w-7 h-7 rounded-full ${userRole === "owner" || userRole === "staff" ? "bg-[#D98C1F]" : "bg-[#556B4F]"} hover:opacity-90 text-white flex items-center justify-center text-xs font-bold transition-colors shadow-sm`}>
                       {currentUser.displayName ? currentUser.displayName[0].toUpperCase() : currentUser.email ? currentUser.email[0].toUpperCase() : "U"}
                     </div>
                   </button>
                   {authDropdown && (
-                    <div className="absolute right-0 mt-1 w-52 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-fade-in">
-                      <div className="px-4 py-2 text-xs text-[#999] border-b border-gray-100 font-medium truncate">
-                        Signed in as:<br />
-                        <span className="font-semibold text-[#222] block mt-0.5">{currentUser.email}</span>
+                    <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-fade-in">
+                      <div className="px-4 py-2.5 border-b border-gray-100">
+                        <p className="text-xs text-[#999]">{userRole === "owner" ? "👑 Owner" : userRole === "staff" ? "🔧 Staff" : "👤 Customer"}</p>
+                        <p className="text-xs font-semibold text-[#222] mt-0.5 truncate">{currentUser.displayName || currentUser.email}</p>
                       </div>
-                      <button
-                        onClick={handleSignOut}
-                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors font-medium"
-                      >
-                        Sign Out
-                      </button>
+                      {(userRole === "owner" || userRole === "staff") ? (
+                        <>
+                          <Link
+                            href="/admin/dashboard"
+                            onClick={() => setAuthDropdown(false)}
+                            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-[#222] hover:text-[#D98C1F] hover:bg-[#FAF7F2] transition-colors font-medium"
+                          >
+                            <LayoutDashboard className="w-4 h-4" /> Admin Panel
+                          </Link>
+                        </>
+                      ) : (
+                        <>
+                          <Link
+                            href="/account"
+                            onClick={() => setAuthDropdown(false)}
+                            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-[#222] hover:text-[#D98C1F] hover:bg-[#FAF7F2] transition-colors"
+                          >
+                            <User className="w-4 h-4" /> My Account
+                          </Link>
+                          <Link
+                            href="/account/orders"
+                            onClick={() => setAuthDropdown(false)}
+                            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-[#222] hover:text-[#D98C1F] hover:bg-[#FAF7F2] transition-colors"
+                          >
+                            <Package className="w-4 h-4" /> My Orders
+                          </Link>
+                        </>
+                      )}
+                      <div className="border-t border-gray-100 mt-1 pt-1">
+                        <button
+                          onClick={handleSignOut}
+                          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors font-medium"
+                        >
+                          <LogOut className="w-4 h-4" /> Sign Out
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -254,30 +257,40 @@ export default function Navbar() {
           <div className="lg:hidden border-t border-gray-100 bg-white animate-fade-in">
             <div className="max-w-7xl mx-auto px-4 py-4 space-y-1">
               {navLinks.map((link) => (
-                <div key={link.label}>
-                  <Link
-                    href={link.href}
-                    onClick={() => setMobileOpen(false)}
-                    className="block px-4 py-3 text-sm font-medium text-[#222] hover:text-[#D98C1F] hover:bg-[#FAF7F2] rounded-lg transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                  {link.children && (
-                    <div className="pl-6 space-y-0.5">
-                      {link.children.map((child) => (
-                        <Link
-                          key={child.label}
-                          href={child.href}
-                          onClick={() => setMobileOpen(false)}
-                          className="block px-4 py-2 text-sm text-[#666] hover:text-[#D98C1F] rounded-lg transition-colors"
-                        >
-                          {child.label}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-4 py-3 text-sm font-medium text-[#222] hover:text-[#D98C1F] hover:bg-[#FAF7F2] rounded-lg transition-colors"
+                >
+                  {link.label}
+                </Link>
               ))}
+              {currentUser && (
+                <div className="pt-2 border-t border-gray-100 space-y-1">
+                  {(userRole === "owner" || userRole === "staff") ? (
+                    <Link href="/admin/dashboard" onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-[#D98C1F] hover:bg-[#FAF7F2] rounded-lg">
+                      <LayoutDashboard className="w-4 h-4" /> Admin Panel
+                    </Link>
+                  ) : (
+                    <>
+                      <Link href="/account" onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-[#222] hover:bg-[#FAF7F2] rounded-lg">
+                        <User className="w-4 h-4" /> My Account
+                      </Link>
+                      <Link href="/account/orders" onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-[#222] hover:bg-[#FAF7F2] rounded-lg">
+                        <Package className="w-4 h-4" /> My Orders
+                      </Link>
+                    </>
+                  )}
+                  <button onClick={() => { handleSignOut(); setMobileOpen(false); }}
+                    className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 rounded-lg w-full">
+                    <LogOut className="w-4 h-4" /> Sign Out
+                  </button>
+                </div>
+              )}
               <div className="pt-3 border-t border-gray-100">
                 <Link
                   href="/cart"
