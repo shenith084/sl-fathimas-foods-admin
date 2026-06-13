@@ -50,20 +50,37 @@ export default function NewProductPage() {
       if (data.success) {
         const productId = data.data.id;
         
-        // Upload Images to Firebase Storage
+        // Upload Images to Cloudinary via API Route
         const imageFiles = form.imageFiles as File[] | undefined;
         if (imageFiles && imageFiles.length > 0) {
-          const { uploadProductImage } = await import("@/lib/firebase/storage");
-          const imageUrls = await Promise.all(
-            imageFiles.map((file, i) => uploadProductImage(productId, file, i))
-          );
-          
-          // Update product with the uploaded image URLs
-          await fetch(`/api/v1/products/${productId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ images: imageUrls }),
+          const uploadPromises = imageFiles.map(async (file, i) => {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("productId", productId);
+            formData.append("index", String(i));
+
+            const uploadRes = await fetch("/api/v1/upload", {
+              method: "POST",
+              body: formData,
+            });
+            const result = await uploadRes.json();
+            if (!result.success) throw new Error(result.message);
+            return result.url as string;
           });
+
+          try {
+            const imageUrls = await Promise.all(uploadPromises);
+            
+            // Update product with the uploaded image URLs
+            await fetch(`/api/v1/products/${productId}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ images: imageUrls }),
+            });
+          } catch (uploadError) {
+            console.error("Image upload failed:", uploadError);
+            alert("Product created, but some images failed to upload.");
+          }
         }
         
         router.push("/admin/products");

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, ShoppingCart, Star } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
+import Image from "next/image";
 
 export interface Product {
   id: string;
@@ -118,10 +119,12 @@ function ProductCard({ product }: { product: Product }) {
           </span>
         )}
         {product.images && product.images.length > 0 ? (
-          <img 
+          <Image 
             src={product.images[0]} 
             alt={product.name} 
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+            fill
+            sizes="(max-width: 640px) 200px, 220px"
+            className="object-cover group-hover:scale-105 transition-transform duration-300" 
           />
         ) : (
           <span className="text-7xl group-hover:scale-110 transition-transform duration-300 select-none">

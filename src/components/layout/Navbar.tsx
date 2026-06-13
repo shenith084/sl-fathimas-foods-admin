@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
 import { Menu, X, Search, ShoppingCart, User, LayoutDashboard, Package, LogOut } from "lucide-react";
 
 const navLinks = [
@@ -130,8 +131,8 @@ export default function Navbar() {
             <div className="w-1/4 flex justify-start">
               <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
                 <div className="flex flex-col items-center">
-                  <div className="w-11 h-11 rounded-full flex items-center justify-center bg-[#FAF7F2] p-1 border border-[#B8740F]/30 shadow-sm">
-                    <img src="/logo.png" alt="Fathima's" className="w-full h-full object-cover rounded-full" />
+                  <div className="w-11 h-11 rounded-full flex items-center justify-center bg-[#FAF7F2] p-1 border border-[#B8740F]/30 shadow-sm relative overflow-hidden">
+                    <Image src="/logo.png" alt="Fathima's" fill sizes="44px" className="object-cover" />
                   </div>
                 </div>
                 <div className="leading-none">

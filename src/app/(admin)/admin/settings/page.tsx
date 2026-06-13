@@ -8,10 +8,14 @@ interface BusinessSettings {
   deliveryCharge?: number;
   freeDeliveryThreshold?: number;
   whatsappNumber?: string;
-  bankName?: string;
-  bankAccountName?: string;
-  bankAccountNo?: string;
-  bankBranch?: string;
+  bank1Name?: string;
+  bank1AccountName?: string;
+  bank1AccountNo?: string;
+  bank1Branch?: string;
+  bank2Name?: string;
+  bank2AccountName?: string;
+  bank2AccountNo?: string;
+  bank2Branch?: string;
   businessEmail?: string;
   businessAddress?: string;
 }
@@ -160,23 +164,49 @@ export default function AdminSettingsPage() {
         {/* Bank Transfer Settings */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <h3 className="font-semibold text-[#222] mb-5">🏦 Bank Transfer Details</h3>
-          <div className="space-y-4">
-            {[
-              { label: "Bank Name", field: "bankName", placeholder: "People's Bank" },
-              { label: "Account Name", field: "bankAccountName", placeholder: "SL Fathima's Foods" },
-              { label: "Account Number", field: "bankAccountNo", placeholder: "123-456-789-012" },
-              { label: "Branch", field: "bankBranch", placeholder: "Colombo Main Branch" },
-            ].map((f) => (
-              <div key={f.field}>
-                <label className="block text-xs font-semibold text-[#555] mb-1.5">{f.label}</label>
-                <input
-                  value={(settings as Record<string, string>)[f.field] || ""}
-                  onChange={(e) => update(f.field, e.target.value)}
-                  placeholder={f.placeholder}
-                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#D98C1F] focus:ring-2 focus:ring-[#D98C1F]/20"
-                />
-              </div>
-            ))}
+          
+          <div className="mb-6">
+            <h4 className="text-sm font-bold text-[#D98C1F] mb-3">Bank Account 1</h4>
+            <div className="space-y-4">
+              {[
+                { label: "Bank Name", field: "bank1Name", placeholder: "BOC Bank" },
+                { label: "Account Name", field: "bank1AccountName", placeholder: "A R F SHAHANA" },
+                { label: "Account Number", field: "bank1AccountNo", placeholder: "12345678" },
+                { label: "Branch", field: "bank1Branch", placeholder: "Colombo Branch" },
+              ].map((f) => (
+                <div key={f.field}>
+                  <label className="block text-xs font-semibold text-[#555] mb-1.5">{f.label}</label>
+                  <input
+                    value={(settings as Record<string, string>)[f.field] || ""}
+                    onChange={(e) => update(f.field, e.target.value)}
+                    placeholder={f.placeholder}
+                    className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#D98C1F] focus:ring-2 focus:ring-[#D98C1F]/20"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-6 border-t border-gray-100">
+            <h4 className="text-sm font-bold text-[#D98C1F] mb-3">Bank Account 2</h4>
+            <div className="space-y-4">
+              {[
+                { label: "Bank Name", field: "bank2Name", placeholder: "Commercial Bank" },
+                { label: "Account Name", field: "bank2AccountName", placeholder: "A R F SHAHANA" },
+                { label: "Account Number", field: "bank2AccountNo", placeholder: "12345678" },
+                { label: "Branch", field: "bank2Branch", placeholder: "Colombo Branch" },
+              ].map((f) => (
+                <div key={f.field}>
+                  <label className="block text-xs font-semibold text-[#555] mb-1.5">{f.label}</label>
+                  <input
+                    value={(settings as Record<string, string>)[f.field] || ""}
+                    onChange={(e) => update(f.field, e.target.value)}
+                    placeholder={f.placeholder}
+                    className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#D98C1F] focus:ring-2 focus:ring-[#D98C1F]/20"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 

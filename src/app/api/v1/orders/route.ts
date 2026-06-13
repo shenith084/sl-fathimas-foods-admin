@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOrders } from "@/lib/services/orderService";
 import { adminDb } from "@/lib/firebase/admin";
+import { sendOrderConfirmationEmail, sendNewOrderAdminAlert } from "@/lib/services/emailService";
 
 export async function GET(req: NextRequest) {
   try {
@@ -48,6 +49,17 @@ export async function POST(req: NextRequest) {
     };
 
     await orderRef.set(orderData);
+
+    const emailData = {
+      ...orderData,
+      paymentMethod: orderData.paymentDetails.method,
+    };
+
+    // Send emails in the background
+    Promise.all([
+      sendOrderConfirmationEmail(emailData),
+      sendNewOrderAdminAlert(emailData)
+    ]).catch(err => console.error("Background email failed:", err));
 
     return NextResponse.json({ success: true, data: orderData });
   } catch (error: any) {

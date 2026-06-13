@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOrderById, updateOrderStatus } from "@/lib/services/orderService";
 import { logAuditAction } from "@/lib/services/auditService";
+import { sendStatusUpdateEmail } from "@/lib/services/emailService";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -27,6 +28,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       oldValue: { status: oldOrder?.status },
       newValue: { status },
     });
+
+    // Only send email for 'preparing' and 'dispatched' as requested
+    if (oldOrder && (status === "preparing" || status === "dispatched") && status !== oldOrder.status) {
+      try {
+        await sendStatusUpdateEmail(
+          oldOrder.shippingDetails.email, 
+          oldOrder.shippingDetails.firstName, 
+          id, 
+          status, 
+          note
+        );
+      } catch (err) {
+        console.error("Status update email failed:", err);
+      }
+    }
+
     return NextResponse.json({ success: true, message: "Order status updated" });
   } catch (err) {
     return NextResponse.json({ success: false, message: "Failed to update order" }, { status: 500 });

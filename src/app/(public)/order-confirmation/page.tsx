@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckCircle } from "lucide-react";
+import OrderPixelTracker from "@/components/analytics/OrderPixelTracker";
 
 export const metadata: Metadata = { title: "Order Confirmed!" };
 
@@ -14,6 +15,7 @@ export default async function OrderConfirmationPage({ searchParams }: PageProps)
 
   return (
     <div className="bg-[#FAF7F2] min-h-screen py-16 px-4">
+      <OrderPixelTracker orderId={orderId} total={4800} />
       <div className="max-w-4xl mx-auto flex flex-col items-center">
         {/* Success Icon */}
         <div className="w-20 h-20 rounded-full border-2 border-green-500 flex items-center justify-center mb-6">

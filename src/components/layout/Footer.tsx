@@ -1,4 +1,8 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import NewsletterForm from "@/components/layout/NewsletterForm";
 
 const footerLinks = {
@@ -60,6 +64,19 @@ const socialLinks = [
 ];
 
 export default function Footer() {
+  const [settings, setSettings] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/api/v1/settings")
+      .then(res => res.json())
+      .then(data => { if (data.success) setSettings(data.data); })
+      .catch(() => {});
+  }, []);
+
+  const whatsapp = settings?.whatsappNumber || "+94 77 123 4567";
+  const email = settings?.businessEmail || "slfathimasfoods@gmail.com";
+  const address = settings?.businessAddress || "Sri Lanka";
+
   return (
     <footer className="bg-[#1F1F1F] text-white">
       {/* Main Footer Content */}
@@ -69,8 +86,8 @@ export default function Footer() {
           <div className="lg:col-span-1">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 mb-5 group">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-black overflow-hidden shadow-sm border border-white/10 group-hover:border-[#D98C1F]/50 transition-colors">
-                <img src="/logo.png" alt="Fathima's Logo" className="w-full h-full object-cover" />
+              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-black overflow-hidden shadow-sm border border-white/10 group-hover:border-[#D98C1F]/50 transition-colors relative">
+                <Image src="/logo.png" alt="Fathima's Logo" fill sizes="48px" className="object-cover" />
               </div>
               <div className="leading-tight">
                 <div className="font-display font-bold text-white text-base tracking-wide group-hover:text-[#D98C1F] transition-colors">
@@ -133,15 +150,15 @@ export default function Footer() {
             <ul className="space-y-3 text-sm text-gray-400">
               <li className="flex items-start gap-2">
                 <span className="text-[#D98C1F] mt-0.5">📞</span>
-                <span>+94 77 123 4567</span>
+                <span>{whatsapp}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#D98C1F] mt-0.5">✉️</span>
-                <span>slfathimasfoods@gmail.com</span>
+                <span>{email}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#D98C1F] mt-0.5">📍</span>
-                <span>Sri Lanka</span>
+                <span>{address}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#D98C1F] mt-0.5">🎵</span>

@@ -7,7 +7,8 @@ import { ChevronRight, Lock, Check, Loader2 } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { auth, db } from "@/lib/firebase/client";
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { event as fbEvent } from "@/components/analytics/MetaPixel";
+import { ttevent } from "@/components/analytics/TikTokPixel";
 
 const steps = ["Cart", "Shipping", "Payment", "Confirm"];
 
@@ -36,10 +37,20 @@ export default function CheckoutPage() {
   });
   const [errorMsg, setErrorMsg] = useState("");
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [settings, setSettings] = useState<any>(null);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    fetch("/api/v1/settings")
+      .then(res => res.json())
+      .then(data => { if (data.success) setSettings(data.data); })
+      .catch(err => console.error("Failed to fetch settings", err));
+      
+    // Trigger InitiateCheckout event
+    const total = getCartTotal();
+    fbEvent("InitiateCheckout", { value: total, currency: "LKR" });
+    ttevent("InitiateCheckout", { value: total, currency: "LKR" });
+  }, [getCartTotal]);
 
   const update = (field: string, value: string) => setForm((f) => ({ ...f, [field]: value }));
 
@@ -66,7 +77,9 @@ export default function CheckoutPage() {
   }, []);
 
   const subtotal = getCartTotal();
-  const delivery = subtotal > 0 ? 300 : 0;
+  const deliveryCharge = settings?.deliveryCharge ?? 450;
+  const freeThreshold = settings?.freeDeliveryThreshold ?? 5000;
+  const delivery = (subtotal > 0 && subtotal < freeThreshold) ? deliveryCharge : 0;
   const total = subtotal + delivery;
 
   if (!mounted) {
@@ -290,18 +303,22 @@ export default function CheckoutPage() {
                       <p className="text-[#666] text-xs mt-1">Transfer to our bank account and upload the receipt.</p>
                       {form.paymentMethod === "bank" && (
                         <div className="mt-3 bg-[#F4EFE6] rounded-xl p-4 text-xs text-[#555] space-y-3">
-                          <div>
-                            <p className="font-semibold text-[#222]">BOC Bank</p>
-                            <p>Account Name: <span className="font-medium">A R F SHAHANA</span></p>
-                            <p>Account No: <span className="font-medium">92878052</span></p>
-                            <p>Branch: <span className="font-medium">Kurunegala Branch</span></p>
-                          </div>
-                          <div className="pt-2 border-t border-[#E8DFCC]">
-                            <p className="font-semibold text-[#222]">Commercial Bank (COM BANK)</p>
-                            <p>Account Name: <span className="font-medium">A R F SHAHANA</span></p>
-                            <p>Account No: <span className="font-medium">8009702437</span></p>
-                            <p>Branch: <span className="font-medium">Narammala Branch</span></p>
-                          </div>
+                          {settings?.bank1Name && (
+                            <div>
+                              <p className="font-semibold text-[#222]">{settings.bank1Name}</p>
+                              <p>Account Name: <span className="font-medium">{settings.bank1AccountName}</span></p>
+                              <p>Account No: <span className="font-medium">{settings.bank1AccountNo}</span></p>
+                              <p>Branch: <span className="font-medium">{settings.bank1Branch}</span></p>
+                            </div>
+                          )}
+                          {settings?.bank2Name && (
+                            <div className={settings?.bank1Name ? "pt-2 border-t border-[#E8DFCC]" : ""}>
+                              <p className="font-semibold text-[#222]">{settings.bank2Name}</p>
+                              <p>Account Name: <span className="font-medium">{settings.bank2AccountName}</span></p>
+                              <p>Account No: <span className="font-medium">{settings.bank2AccountNo}</span></p>
+                              <p>Branch: <span className="font-medium">{settings.bank2Branch}</span></p>
+                            </div>
+                          )}
                           
                           <div className="pt-3 border-t border-[#E8DFCC]">
                             <label className="block font-semibold text-[#222] mb-1">Upload Payment Receipt *</label>

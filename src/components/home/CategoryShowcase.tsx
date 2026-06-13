@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const categories = [
   { label: "Biriyani Kit", slug: "biriyani-kit", image: "/categories/biriyani.png", color: "bg-amber-100" },
@@ -32,9 +33,15 @@ export default function CategoryShowcase() {
             >
               {/* Circle */}
               <div
-                className={`w-16 h-16 md:w-20 md:h-20 rounded-full ${cat.color} flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-110 transition-all duration-300 border-2 border-white overflow-hidden`}
+                className={`w-16 h-16 md:w-20 md:h-20 rounded-full ${cat.color} flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-110 transition-all duration-300 border-2 border-white overflow-hidden relative`}
               >
-                <img src={cat.image} alt={cat.label} className="w-full h-full object-cover" />
+                <Image 
+                  src={cat.image} 
+                  alt={cat.label} 
+                  fill
+                  sizes="(max-width: 768px) 64px, 80px"
+                  className="object-cover" 
+                />
               </div>
               {/* Label */}
               <span className="text-[#444] text-xs font-medium text-center leading-tight group-hover:text-[#D98C1F] transition-colors duration-200">

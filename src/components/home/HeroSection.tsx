@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 export default function HeroSection() {
   return (
@@ -94,10 +95,13 @@ export default function HeroSection() {
             <div className="relative w-full max-w-[550px] mx-auto">
               <div className="absolute inset-0 bg-[#2C4631]/5 rounded-[3rem] blur-2xl -z-10" />
               <div className="relative w-full aspect-[4/3.5] flex items-center justify-center">
-                <img
+                <Image
                   src="/images/hero-product.png"
                   alt="SL Fathima's Foods Premium Products"
-                  className="w-full h-full object-contain drop-shadow-2xl"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 550px"
+                  className="object-contain drop-shadow-2xl"
+                  priority
                 />
               </div>
             </div>

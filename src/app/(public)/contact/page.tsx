@@ -1,12 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Send, MapPin, Phone, Mail, Clock } from "lucide-react";
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
   const [sent, setSent] = useState(false);
+  const [settings, setSettings] = useState<any>(null);
+  
+  useEffect(() => {
+    fetch("/api/v1/settings")
+      .then(res => res.json())
+      .then(data => { if (data.success) setSettings(data.data); })
+      .catch(() => {});
+  }, []);
+
+  const whatsapp = settings?.whatsappNumber || "+94 77 123 4567";
+  const email = settings?.businessEmail || "slfathimasfoods@gmail.com";
+  const address = settings?.businessAddress || "Sri Lanka";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,21 +51,21 @@ export default function ContactPage() {
               <h3 className="font-display font-bold text-lg mb-1">Chat on WhatsApp</h3>
               <p className="text-white/80 text-sm mb-4">Fastest way to reach us — usually reply within minutes!</p>
               <a
-                href="https://wa.me/94771234567"
+                href={`https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 id="contact-whatsapp-btn"
                 className="block text-center bg-white text-[#25D366] font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-gray-50 transition-colors"
               >
-                +94 77 123 4567
+                {whatsapp}
               </a>
             </div>
 
             {/* Info cards */}
             {[
-              { icon: <Phone className="w-5 h-5" />, label: "Phone", value: "+94 77 123 4567" },
-              { icon: <Mail className="w-5 h-5" />, label: "Email", value: "slfathimasfoods@gmail.com" },
-              { icon: <MapPin className="w-5 h-5" />, label: "Location", value: "Sri Lanka" },
+              { icon: <Phone className="w-5 h-5" />, label: "Phone", value: whatsapp },
+              { icon: <Mail className="w-5 h-5" />, label: "Email", value: email },
+              { icon: <MapPin className="w-5 h-5" />, label: "Location", value: address },
               { icon: <Clock className="w-5 h-5" />, label: "Response Time", value: "Within 24 hours" },
             ].map((info) => (
               <div key={info.label} className="bg-white rounded-2xl p-4 flex items-start gap-4 shadow-sm">

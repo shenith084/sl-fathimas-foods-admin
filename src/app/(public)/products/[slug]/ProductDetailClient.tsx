@@ -9,6 +9,9 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { useCartStore } from "@/store/cartStore";
 import { products as fallbackProducts } from "@/lib/mockData";
 import Script from "next/script";
+import { event as fbEvent } from "@/components/analytics/MetaPixel";
+import { ttevent } from "@/components/analytics/TikTokPixel";
+import Image from "next/image";
 
 function StarRating({ rating, count }: { rating: number; count: number }) {
   return (
@@ -46,15 +49,26 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
         
         if (data.success && data.data) {
           setProduct(data.data);
+          // Trigger ViewContent event
+          fbEvent("ViewContent", { content_name: data.data.name, content_ids: [data.data.id], content_type: "product", value: data.data.price, currency: "LKR" });
+          ttevent("ViewContent", { contents: [{ content_id: data.data.id, content_name: data.data.name, price: data.data.price, quantity: 1 }], value: data.data.price, currency: "LKR" });
         } else {
           // fallback to mock data
           const localProd = fallbackProducts.find(p => p.slug === slug);
           setProduct(localProd || null);
+          if (localProd) {
+            fbEvent("ViewContent", { content_name: localProd.name, content_ids: [localProd.id], content_type: "product", value: localProd.price, currency: "LKR" });
+            ttevent("ViewContent", { contents: [{ content_id: localProd.id, content_name: localProd.name, price: localProd.price, quantity: 1 }], value: localProd.price, currency: "LKR" });
+          }
         }
       } catch (err) {
         console.warn("API fetch error, falling back to local static catalog:", err);
         const localProd = fallbackProducts.find(p => p.slug === slug);
         setProduct(localProd || null);
+        if (localProd) {
+          fbEvent("ViewContent", { content_name: localProd.name, content_ids: [localProd.id], content_type: "product", value: localProd.price, currency: "LKR" });
+          ttevent("ViewContent", { contents: [{ content_id: localProd.id, content_name: localProd.name, price: localProd.price, quantity: 1 }], value: localProd.price, currency: "LKR" });
+        }
       } finally {
         setLoading(false);
       }
@@ -122,6 +136,11 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
       weight: product.weight,
       vacuum: vacuum && product.customizable,
     }, qty);
+    
+    // Trigger AddToCart event
+    fbEvent("AddToCart", { content_name: product.name, content_ids: [product.id], content_type: "product", value: totalPrice, currency: "LKR" });
+    ttevent("AddToCart", { contents: [{ content_id: product.id, content_name: product.name, price: product.price, quantity: qty }], value: totalPrice, currency: "LKR" });
+    
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -170,7 +189,14 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                 </span>
               )}
               {product.images && product.images.length > 0 ? (
-                <img src={product.images[activeImageIndex] || product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                <Image 
+                  src={product.images[activeImageIndex] || product.images[0]} 
+                  alt={product.name} 
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover" 
+                  priority
+                />
               ) : (
                 <span className="text-[12rem] select-none drop-shadow-xl" role="img" aria-label={product.name}>{product.emoji || "📦"}</span>
               )}
@@ -187,9 +213,15 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                     <div 
                       key={i} 
                       onClick={() => setActiveImageIndex(i)}
-                      className={`flex-1 bg-[#FAF7F2] rounded-2xl aspect-square overflow-hidden cursor-pointer border-2 transition-all duration-300 ${i === activeImageIndex ? "border-[#D98C1F] opacity-100 scale-105 shadow-md" : "border-transparent opacity-50 hover:opacity-100"}`}
+                      className={`flex-1 bg-[#FAF7F2] rounded-2xl aspect-square overflow-hidden cursor-pointer border-2 transition-all duration-300 relative ${i === activeImageIndex ? "border-[#D98C1F] opacity-100 scale-105 shadow-md" : "border-transparent opacity-50 hover:opacity-100"}`}
                     >
-                      <img src={img} alt={`Thumbnail ${i+1}`} className="w-full h-full object-cover" />
+                      <Image 
+                        src={img} 
+                        alt={`Thumbnail ${i+1}`} 
+                        fill
+                        sizes="100px"
+                        className="object-cover" 
+                      />
                     </div>
                   ))}
                 </div>
@@ -437,12 +469,14 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {related.map((p) => (
               <Link key={p.id} href={`/products/${p.slug}`} className="bg-white rounded-2xl overflow-hidden shadow-sm group block hover:shadow-md transition-shadow">
-                <div className="h-36 bg-gradient-to-br from-[#F4EFE6] to-[#FAF7F2] flex items-center justify-center overflow-hidden">
+                <div className="h-36 bg-gradient-to-br from-[#F4EFE6] to-[#FAF7F2] flex items-center justify-center overflow-hidden relative">
                   {p.images && p.images.length > 0 ? (
-                    <img 
+                    <Image 
                       src={p.images[0]} 
                       alt={p.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      fill
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
                     <span className="text-6xl group-hover:scale-110 transition-transform duration-300 select-none" role="img" aria-label={p.name}>{p.emoji || "📦"}</span>

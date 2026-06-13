@@ -60,13 +60,32 @@ export default function EditProductPage() {
     try {
       let finalImages = (form as any).images;
       
-      // Upload Images to Firebase Storage if new files are selected
+      // Upload Images to Cloudinary if new files are selected
       const imageFiles = (form as any).imageFiles as File[] | undefined;
       if (imageFiles && imageFiles.length > 0) {
-        const { uploadProductImage } = await import("@/lib/firebase/storage");
-        finalImages = await Promise.all(
-          imageFiles.map((file, i) => uploadProductImage(id as string, file, i))
-        );
+        const uploadPromises = imageFiles.map(async (file, i) => {
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("productId", id as string);
+          formData.append("index", String(i));
+
+          const uploadRes = await fetch("/api/v1/upload", {
+            method: "POST",
+            body: formData,
+          });
+          const result = await uploadRes.json();
+          if (!result.success) throw new Error(result.message);
+          return result.url as string;
+        });
+
+        try {
+          finalImages = await Promise.all(uploadPromises);
+        } catch (uploadError) {
+          console.error("Image upload failed:", uploadError);
+          alert("Some images failed to upload. Please try again.");
+          setLoading(false);
+          return;
+        }
       }
 
       const res = await fetch(`/api/v1/products/${id}`, {

@@ -7,6 +7,7 @@ import { ChevronRight, SlidersHorizontal, Search, ShoppingCart } from "lucide-re
 import { db } from "@/lib/firebase/client";
 import { collection, getDocs } from "firebase/firestore";
 import { useCartStore } from "@/store/cartStore";
+import Image from "next/image";
 import { products as fallbackProducts, categories as fallbackCategories } from "@/lib/mockData";
 
 export const foodTruckListIds = [
@@ -489,10 +490,12 @@ function ProductsContent({ initialProducts }: { initialProducts: any[] }) {
                             </span>
                           )}
                           {product.images && product.images.length > 0 ? (
-                            <img 
+                            <Image 
                               src={product.images[0]} 
                               alt={product.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              fill
+                              sizes="(max-width: 768px) 50vw, 25vw"
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
                             />
                           ) : (
                             <span className="text-6xl group-hover:scale-110 transition-transform duration-300 select-none drop-shadow-md">
