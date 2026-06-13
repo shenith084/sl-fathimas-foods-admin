@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Shield, Loader2, Edit2, CheckCircle2 } from "lucide-react";
+import { User, Shield, Loader2, Edit2, CheckCircle2, Trash2 } from "lucide-react";
 import { Role, getRoles, assignRoleToUser } from "@/lib/services/roleService";
 import { auth } from "@/lib/firebase/client";
 import CreateUserModal from "./CreateUserModal";
@@ -43,7 +43,12 @@ export default function UsersClient() {
       const res = await fetch("/api/v1/users");
       const json = await res.json();
       if (json.success) {
-        setUsers(json.data as UserDoc[]);
+        const allUsers = json.data as UserDoc[];
+        const systemUsers = allUsers.filter(u => {
+          const roleId = u.roleId || u.role || "customer";
+          return roleId !== "customer";
+        });
+        setUsers(systemUsers);
       }
 
       // Check current user
@@ -74,6 +79,27 @@ export default function UsersClient() {
       alert(error.message || "Failed to update role. You must be a Super Admin.");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDeleteUser = async (uid: string) => {
+    if (!confirm("Are you sure you want to delete this user? This cannot be undone.")) return;
+    try {
+      setLoading(true);
+      const user = auth.currentUser;
+      if (!user) throw new Error("Not logged in");
+      const token = await user.getIdToken();
+      const res = await fetch(`/api/v1/users/${uid}`, { 
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error);
+      await fetchData();
+    } catch (err: any) {
+      console.error("Failed to delete user:", err);
+      alert(err.message || "Failed to delete user.");
+      setLoading(false);
     }
   };
 
@@ -195,16 +221,25 @@ export default function UsersClient() {
                      (user.role !== "owner") && 
                      (isCallerSuperAdmin || user.roleId !== "super_admin") && 
                      (currentUserId !== user.uid) && (
-                      <button
-                        onClick={() => {
-                          setEditingUserId(user.uid);
-                          setSelectedRoleId(user.roleId || user.role || "customer");
-                        }}
-                        className="p-2 text-[#666] hover:text-[#D98C1F] hover:bg-[#FAF7F2] rounded-lg transition-colors inline-flex"
-                        title="Change Role"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
+                      <>
+                        <button
+                          onClick={() => {
+                            setEditingUserId(user.uid);
+                            setSelectedRoleId(user.roleId || user.role || "customer");
+                          }}
+                          className="p-2 text-[#666] hover:text-[#D98C1F] hover:bg-[#FAF7F2] rounded-lg transition-colors inline-flex"
+                          title="Change Role"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(user.uid)}
+                          className="p-2 text-[#666] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors inline-flex ml-1"
+                          title="Delete User"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </>
                     )}
                   </td>
                 </tr>

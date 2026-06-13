@@ -24,9 +24,8 @@ export const foodTruckListIds = [
 ];
 
 const badgeColors: Record<string, string> = {
-  "Best Seller": "bg-[#D98C1F] text-white",
+  Popular: "bg-[#D98C1F] text-white",
   New: "bg-[#2C4631] text-white",
-  Popular: "bg-purple-600 text-white",
   "Out of Stock": "bg-gray-400 text-white",
 };
 
@@ -100,7 +99,8 @@ function ProductsContent({ initialProducts }: { initialProducts: any[] }) {
       activeCategorySlug === "All" ||
       (activeCategorySlug === "food-truck-list" 
         ? foodTruckListIds.includes(product.id) 
-        : product.category.toLowerCase() === activeCategorySlug.toLowerCase());
+        : product.category.toLowerCase() === activeCategorySlug.toLowerCase() ||
+          product.category.toLowerCase().startsWith(activeCategorySlug.toLowerCase().replace(/s$/, "") + "-"));
 
     // Search query match
     const searchMatches =
@@ -202,7 +202,7 @@ function ProductsContent({ initialProducts }: { initialProducts: any[] }) {
               <span className="text-[#444]">All Products</span>
             </nav>
             <h1 className="font-display font-bold text-[#222] text-3xl md:text-4xl mb-2">
-              Shop All Products
+              Shop All <span className="text-[#D98C1F] italic font-serif">Products</span>
             </h1>
             <p className="text-[#666] text-[13px] mt-1">Explore our premium homemade food products made with love and natural ingredients.</p>
           </div>
@@ -484,11 +484,15 @@ function ProductsContent({ initialProducts }: { initialProducts: any[] }) {
                       <Link href={`/products/${product.slug}`} className="block">
                         {/* Image area */}
                         <div className="relative bg-[#F4EFE6] h-56 flex items-center justify-center overflow-hidden">
-                          {product.badge && (
+                          {product.stock <= 0 ? (
+                            <span className="absolute top-3 left-3 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-sm z-10 bg-gray-500 text-white shadow-sm">
+                              Out of Stock
+                            </span>
+                          ) : product.badge ? (
                             <span className={`absolute top-3 left-3 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-sm z-10 ${badgeColors[product.badge] || "bg-[#2C4631] text-white"}`}>
                               {product.badge}
                             </span>
-                          )}
+                          ) : null}
                           {product.images && product.images.length > 0 ? (
                             <Image 
                               src={product.images[0]} 
@@ -527,9 +531,14 @@ function ProductsContent({ initialProducts }: { initialProducts: any[] }) {
                           id={`add-cart-${product.id}`}
                           onClick={(e) => {
                             e.preventDefault();
-                            handleAddToCart(product);
+                            if (product.stock > 0) handleAddToCart(product);
                           }}
-                          className="w-9 h-9 bg-[#2C4631] hover:bg-[#1E3322] text-white rounded-xl flex items-center justify-center transition-all duration-200 shadow-sm hover:scale-105"
+                          disabled={product.stock <= 0}
+                          className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 shadow-sm ${
+                            product.stock <= 0 
+                              ? "bg-gray-200 text-gray-400 cursor-not-allowed" 
+                              : "bg-[#2C4631] hover:bg-[#1E3322] text-white hover:scale-105"
+                          }`}
                           aria-label={`Add ${product.name} to cart`}
                         >
                           <ShoppingCart className="w-4 h-4" />

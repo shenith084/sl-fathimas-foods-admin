@@ -63,9 +63,8 @@ export default function AccountDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2]">
-      <div className="max-w-4xl mx-auto px-4 py-12 md:py-16">
-        {/* Header */}
+    <div className="w-full">
+      {/* Header */}
         <div className="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#D98C1F] to-[#B8740F] flex items-center justify-center text-white font-display font-bold text-2xl shadow-[0_5px_15px_rgba(217,140,31,0.3)] border border-[#D98C1F]/20">
@@ -134,33 +133,42 @@ export default function AccountDashboardPage() {
               </Link>
             </div>
           ) : (
-            <div className="divide-y divide-gray-50">
-              {orders.map((order) => (
-                <div key={order.id} className="px-8 py-5 flex items-center gap-5 hover:bg-[#FAF7F2]/50 transition-colors">
-                  <div className="w-12 h-12 rounded-full bg-[#FAF7F2] border border-gray-100 flex items-center justify-center flex-shrink-0">
-                    <Package className="w-5 h-5 text-[#D98C1F]" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-1">
-                      <p className="text-xs font-mono text-[#888]">#{order.id.substring(0, 10)}...</p>
-                      <StatusBadge status={order.status} />
-                    </div>
-                    <p className="text-sm text-[#555] truncate font-medium">
-                      {order.items?.map((i) => `${i.name} ×${i.qty}`).join(", ")}
-                    </p>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-base font-bold text-[#222]">LKR {order.total?.toLocaleString()}</p>
-                    <p className="text-xs text-[#888] mt-1 uppercase tracking-wider">
-                      {order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-LK", { month: "short", day: "numeric", year: "numeric" }) : "—"}
-                    </p>
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[600px]">
+                <thead>
+                  <tr className="border-b border-gray-100 bg-gray-50/50">
+                    <th className="px-6 py-4 text-xs font-bold text-[#555] tracking-wide">Order</th>
+                    <th className="px-6 py-4 text-xs font-bold text-[#555] tracking-wide">Date</th>
+                    <th className="px-6 py-4 text-xs font-bold text-[#555] tracking-wide">Items</th>
+                    <th className="px-6 py-4 text-xs font-bold text-[#555] tracking-wide">Total</th>
+                    <th className="px-6 py-4 text-xs font-bold text-[#555] tracking-wide">Status</th>
+                    <th className="px-6 py-4 text-xs font-bold text-[#555] tracking-wide text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {orders.map((order) => (
+                    <tr key={order.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-6 py-4 font-bold text-sm text-[#222]">#{order.id.substring(0, 8).toUpperCase()}</td>
+                      <td className="px-6 py-4 text-sm text-[#555]">
+                        {order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-[#555]">{order.items?.length || 0} Items</td>
+                      <td className="px-6 py-4 text-sm font-semibold text-[#222]">LKR {order.total?.toLocaleString()}</td>
+                      <td className="px-6 py-4">
+                        <StatusBadge status={order.status} />
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Link href="/account/orders" className="px-4 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-[#555] hover:bg-gray-50 transition-colors inline-block">
+                          View Details
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 }

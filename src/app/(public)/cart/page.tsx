@@ -13,9 +13,14 @@ export default function CartPage() {
 
   const [coupon, setCoupon] = useState("");
   const [mounted, setMounted] = useState(false);
+  const [settings, setSettings] = useState<any>(null);
 
   useEffect(() => {
     setMounted(true);
+    fetch("/api/v1/settings")
+      .then(res => res.json())
+      .then(data => { if (data.success) setSettings(data.data); })
+      .catch(err => console.error("Failed to fetch settings", err));
   }, []);
 
   const updateQty = (id: string, vacuum: boolean, delta: number) => {
@@ -30,7 +35,7 @@ export default function CartPage() {
   };
 
   const subtotal = storeGetTotal();
-  const deliveryCharge = subtotal > 0 ? 450 : 0;
+  const deliveryCharge = subtotal > 0 ? (settings?.deliveryCharge ?? 450) : 0;
   const total = subtotal + deliveryCharge;
 
   if (!mounted) {
@@ -106,6 +111,11 @@ export default function CartPage() {
                         <span className="inline-block mt-1.5 text-[10px] bg-[#2C4631]/10 text-[#2C4631] px-2 py-0.5 rounded-md font-semibold uppercase tracking-wider">
                           + Vacuum Packaging
                         </span>
+                      )}
+                      {item.description && (
+                        <div className="mt-2 text-xs text-[#666] whitespace-pre-line border-l-2 border-[#D98C1F]/30 pl-2">
+                          {item.description}
+                        </div>
                       )}
                     </div>
                   </div>

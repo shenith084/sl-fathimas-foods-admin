@@ -7,6 +7,7 @@ import { ChevronRight, Lock, Check, Loader2 } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { auth, db } from "@/lib/firebase/client";
 import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { event as fbEvent } from "@/components/analytics/MetaPixel";
 import { ttevent } from "@/components/analytics/TikTokPixel";
 
@@ -63,13 +64,30 @@ export default function CheckoutPage() {
 
   // Autofill signed in user info
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
+        let fetchedPhone = "";
+        let fetchedAddress = "";
+        
+        try {
+          const userDocRef = doc(db, "users", user.uid);
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            fetchedPhone = data.phone || "";
+            fetchedAddress = data.address || "";
+          }
+        } catch (err) {
+          console.error("Failed to load user profile for checkout autofill", err);
+        }
+
         setForm((f) => ({
           ...f,
           email: user.email || f.email,
           firstName: user.displayName ? user.displayName.split(" ")[0] : f.firstName,
           lastName: user.displayName && user.displayName.split(" ").length > 1 ? user.displayName.split(" ").slice(1).join(" ") : f.lastName,
+          phone: fetchedPhone || f.phone,
+          address: fetchedAddress || f.address,
         }));
       }
     });
@@ -78,9 +96,16 @@ export default function CheckoutPage() {
 
   const subtotal = getCartTotal();
   const deliveryCharge = settings?.deliveryCharge ?? 450;
-  const freeThreshold = settings?.freeDeliveryThreshold ?? 5000;
-  const delivery = (subtotal > 0 && subtotal < freeThreshold) ? deliveryCharge : 0;
+  const delivery = subtotal > 0 ? deliveryCharge : 0;
   const total = subtotal + delivery;
+
+  const hasGiftPack = items.some(item => item.id.startsWith("custom-gift-pack"));
+
+  useEffect(() => {
+    if (hasGiftPack) {
+      setForm(f => ({ ...f, paymentMethod: "bank" }));
+    }
+  }, [hasGiftPack]);
 
   if (!mounted) {
     return (
@@ -139,7 +164,8 @@ export default function CheckoutPage() {
         qty: item.qty,
         emoji: item.emoji,
         weight: item.weight,
-        vacuum: item.vacuum
+        vacuum: item.vacuum,
+        description: item.description
       })),
       shippingDetails: {
         firstName: form.firstName,
@@ -287,11 +313,12 @@ export default function CheckoutPage() {
                 {/* Payment options */}
                 <div className="space-y-3 mb-6">
                   {/* COD */}
-                  <label className={`flex items-start gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-colors ${form.paymentMethod === "cod" ? "border-[#D98C1F] bg-[#D98C1F]/5" : "border-gray-200 hover:border-gray-300"}`}>
-                    <input type="radio" name="payment" value="cod" checked={form.paymentMethod === "cod"} onChange={() => update("paymentMethod", "cod")} className="mt-1" />
+                  <label className={`flex items-start gap-4 p-4 rounded-2xl border-2 transition-colors ${hasGiftPack ? 'opacity-50 cursor-not-allowed border-gray-100 bg-gray-50' : form.paymentMethod === "cod" ? "border-[#D98C1F] bg-[#D98C1F]/5 cursor-pointer" : "border-gray-200 hover:border-gray-300 cursor-pointer"}`}>
+                    <input type="radio" name="payment" value="cod" disabled={hasGiftPack} checked={form.paymentMethod === "cod"} onChange={() => update("paymentMethod", "cod")} className="mt-1" />
                     <div>
                       <p className="font-semibold text-[#222] text-sm">💵 Cash on Delivery (COD)</p>
                       <p className="text-[#666] text-xs mt-1">Pay when your order arrives. Available island-wide via Domex courier.</p>
+                      {hasGiftPack && <p className="text-red-500 text-xs mt-2 font-medium">Not available for Custom Gift Packs.</p>}
                     </div>
                   </label>
 
@@ -392,6 +419,11 @@ export default function CheckoutPage() {
                       <p className="text-[#999] text-[10px]">
                         x{item.qty} {item.vacuum && " (Vacuum)"}
                       </p>
+                      {item.description && (
+                        <p className="text-[10px] text-[#666] mt-1 whitespace-pre-line border-l border-[#D98C1F]/30 pl-1.5">
+                          {item.description}
+                        </p>
+                      )}
                     </div>
                     <span className="font-semibold text-[#444] text-xs">
                       LKR {((item.price + (item.vacuum ? 50 : 0)) * item.qty).toLocaleString()}

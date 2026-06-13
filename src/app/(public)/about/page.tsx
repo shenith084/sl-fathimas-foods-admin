@@ -50,96 +50,104 @@ const values = [
 export default function AboutPage() {
   return (
     <div className="bg-[#FAF7F2] min-h-screen">
-      {/* Refined Hero Banner */}
-      <section className="relative pt-24 pb-20 px-4 overflow-hidden">
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#D98C1F]/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#2C4631]/5 rounded-full translate-y-1/3 -translate-x-1/4 blur-3xl pointer-events-none" />
-        
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center justify-center gap-2 bg-[#2C4631]/5 border border-[#2C4631]/10 text-[#2C4631] text-xs font-bold px-5 py-2 rounded-full mb-8 tracking-[0.2em] uppercase">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#D98C1F]"></span>
-            Our Story
-          </div>
-          <h1 className="font-display font-bold text-5xl md:text-6xl lg:text-7xl mb-8 leading-[1.1] text-[#222]">
-            Made with Love,<br />
-            <span className="text-[#D98C1F] italic font-serif">Served with Purity.</span>
-          </h1>
-          <p className="text-[#555] text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
-            SL Fathima&apos;s Foods is a homemade food brand from the heart of Sri Lanka,
-            crafting authentic flavours with natural ingredients and traditional family recipes.
-          </p>
-        </div>
-      </section>
+      
+      {/* Top Breadcrumb */}
+      <div className="max-w-6xl mx-auto px-4 pt-10 pb-6">
+        <nav className="flex items-center gap-2 text-xs font-medium text-[#888]">
+          <Link href="/" className="hover:text-[#D98C1F] transition-colors">Home</Link>
+          <span>›</span>
+          <span className="text-[#2C4631]">About Us</span>
+        </nav>
+      </div>
 
-      {/* Elegant Story Section */}
-      <section className="py-16 px-4 bg-white relative">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Visual Element */}
-            <div className="relative group lg:w-11/12">
-              <div className="bg-[#FAF7F2] rounded-[2rem] aspect-square flex flex-col items-center justify-center p-8 border border-gray-100 relative overflow-hidden transition-all duration-700 hover:shadow-xl hover:-translate-y-1.5">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#2C4631]/5 to-transparent"></div>
-                <div className="w-16 h-16 rounded-full bg-[#2C4631] flex items-center justify-center mb-6 shadow-[0_10px_25px_rgba(44,70,49,0.3)] relative z-10">
-                  <Home className="w-8 h-8 text-[#D98C1F]" />
-                </div>
-                <h3 className="font-display font-bold text-[#222] text-2xl mb-3 text-center relative z-10">From Our Kitchen</h3>
-                <div className="w-10 h-1 bg-[#D98C1F] rounded-full mb-6 relative z-10"></div>
-                <p className="text-center text-[#666] text-sm leading-relaxed relative z-10">
-                  What began as a mother's passion project to share authentic home cooking has grown into a trusted brand loved by thousands.
-                </p>
-              </div>
-              
-              {/* Premium Floating Badge */}
-              <div className="absolute -bottom-4 -right-4 bg-white border border-gray-100 rounded-2xl p-4 shadow-[0_15px_35px_rgba(0,0,0,0.08)] flex items-center gap-4 transition-transform duration-500 group-hover:-translate-y-2">
-                <div className="w-10 h-10 rounded-xl bg-[#D98C1F]/10 flex items-center justify-center">
-                  <Heart className="w-5 h-5 text-[#D98C1F] fill-[#D98C1F]/20" />
-                </div>
-                <div>
-                  <div className="font-display font-bold text-2xl text-[#222]">1000+</div>
-                  <div className="text-xs font-semibold text-[#888] uppercase tracking-wider">Happy Families</div>
-                </div>
-              </div>
+      <div className="max-w-6xl mx-auto px-4 pb-12">
+        <h1 className="font-display font-bold text-3xl md:text-4xl text-[#222] mb-16">
+          About SL Fathima&apos;s <span className="text-[#D98C1F] italic font-serif">Foods</span>
+        </h1>
+
+        {/* Our Story Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 mb-24 items-start">
+          <div className="order-2 lg:order-1">
+            <h2 className="font-display font-bold text-2xl text-[#222] mb-6">Our Story</h2>
+            <div className="space-y-6 text-[15px] leading-relaxed text-[#555] mb-10">
+              <p>
+                SL Fathima&apos;s Foods started as a passion project — a mother&apos;s desire to share the authentic
+                tastes of Sri Lankan home cooking with families near and far.
+              </p>
+              <p>
+                What began as orders from friends and family quickly grew into a beloved food brand,
+                discovered by thousands through TikTok and trusted for our unwavering commitment to purity.
+                <strong className="font-semibold text-[#222]"> No artificial preservatives. No artificial flavours. Just real, homemade goodness.</strong>
+              </p>
+              <p>
+                Every product — from our signature Biriyani Combo Kit to our hand-crafted pickles and
+                sambals — is made in small batches to ensure quality and freshness in every single jar.
+              </p>
             </div>
 
-            {/* Text Content */}
-            <div className="lg:pl-6">
-              <h2 className="font-display font-bold text-[#222] text-3xl md:text-4xl mb-6 leading-tight">
-                Crafting the Taste <br/> of <span className="text-[#D98C1F]">Home</span>
-              </h2>
-              <div className="space-y-4 text-[#555] text-[15px] leading-relaxed">
-                <p>
-                  SL Fathima&apos;s Foods started as a passion project — a mother&apos;s desire to share the authentic
-                  tastes of Sri Lankan home cooking with families near and far.
-                </p>
-                <p>
-                  What began as orders from friends and family quickly grew into a beloved food brand,
-                  discovered by thousands through TikTok and trusted for our unwavering commitment to purity.
-                  <strong className="font-semibold text-[#222]"> No artificial preservatives. No artificial flavours. Just real, homemade goodness.</strong>
-                </p>
-                <p>
-                  Every product — from our signature Biriyani Combo Kit to our hand-crafted pickles and
-                  sambals — is made in small batches to ensure quality and freshness in every single jar.
-                </p>
+            {/* 4 Feature Icons */}
+            <div className="grid grid-cols-4 gap-2 text-center pt-2">
+              <div className="flex flex-col items-center">
+                <div className="w-14 h-14 rounded-full bg-[#D98C1F]/10 border border-[#D98C1F]/20 flex items-center justify-center mb-3">
+                  <Home className="w-6 h-6 text-[#2C4631]" />
+                </div>
+                <span className="text-[11px] font-bold text-[#222] uppercase tracking-wide">100%<br/>Homemade</span>
               </div>
-
-              <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                <Link
-                  href="/products"
-                  className="inline-flex items-center justify-center gap-2 bg-[#2C4631] hover:bg-[#1E3322] text-white font-bold px-6 py-3 rounded-xl transition-all duration-300 shadow-[0_8px_15px_rgba(44,70,49,0.2)] hover:shadow-[0_12px_20px_rgba(44,70,49,0.3)] hover:-translate-y-0.5"
-                >
-                  Shop Our Products
-                </Link>
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center justify-center gap-2 bg-white border border-gray-200 text-[#444] hover:border-[#2C4631] hover:text-[#2C4631] font-bold px-6 py-3 rounded-xl transition-all duration-300"
-                >
-                  Get in Touch
-                </Link>
+              <div className="flex flex-col items-center">
+                <div className="w-14 h-14 rounded-full bg-[#D98C1F]/10 border border-[#D98C1F]/20 flex items-center justify-center mb-3">
+                  <Leaf className="w-6 h-6 text-[#2C4631]" />
+                </div>
+                <span className="text-[11px] font-bold text-[#222] uppercase tracking-wide">Natural<br/>Ingredients</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="w-14 h-14 rounded-full bg-[#D98C1F]/10 border border-[#D98C1F]/20 flex items-center justify-center mb-3">
+                  <Scroll className="w-6 h-6 text-[#2C4631]" />
+                </div>
+                <span className="text-[11px] font-bold text-[#222] uppercase tracking-wide">Traditional<br/>Recipes</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="w-14 h-14 rounded-full bg-[#D98C1F]/10 border border-[#D98C1F]/20 flex items-center justify-center mb-3">
+                  <ShieldCheck className="w-6 h-6 text-[#2C4631]" />
+                </div>
+                <span className="text-[11px] font-bold text-[#222] uppercase tracking-wide">Halal<br/>Certified Food</span>
               </div>
             </div>
           </div>
+          
+          <div className="order-1 lg:order-2">
+            <div className="aspect-[4/3] lg:aspect-square w-full rounded-[2rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)]">
+              <img src="/images/about-business-product.png" alt="Delicious Sri Lankan Food Products" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+            </div>
+          </div>
         </div>
-      </section>
+
+        {/* Our Mission Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+          <div className="order-2 lg:order-1">
+            <h2 className="font-display font-bold text-2xl text-[#222] mb-6">Our Mission</h2>
+            <p className="text-[15px] leading-relaxed text-[#555]">
+              SL Fathima&apos;s Foods is a homemade food brand from the heart of Sri Lanka, crafting authentic flavours with natural ingredients and traditional family recipes. Our mission is to provide high-quality, authentic homemade food products that bring families together and create memorable moments around the dining table.
+            </p>
+          </div>
+          
+          <div className="order-1 lg:order-2 flex justify-center">
+             <div className="relative w-64 h-64 lg:w-80 lg:h-80">
+               {/* Decorative Leaves/Spices representation */}
+               <div className="absolute inset-0 bg-[#2C4631]/5 rounded-full flex items-center justify-center">
+                 <div className="w-48 h-48 rounded-full border border-dashed border-[#D98C1F]/40 flex items-center justify-center animate-[spin_60s_linear_infinite]">
+                    <Leaf className="absolute -top-4 text-[#2C4631]" size={32} />
+                    <Leaf className="absolute -bottom-4 rotate-180 text-[#D98C1F]" size={32} />
+                    <Leaf className="absolute -left-4 -rotate-90 text-[#2C4631]" size={32} />
+                    <Leaf className="absolute -right-4 rotate-90 text-[#D98C1F]" size={32} />
+                 </div>
+                 <div className="w-24 h-24 bg-white rounded-full shadow-lg flex items-center justify-center z-10">
+                   <img src="/logo.png" alt="Logo" className="w-16 h-16 object-contain" />
+                 </div>
+               </div>
+             </div>
+          </div>
+        </div>
+      </div>
 
       {/* Values Grid */}
       <section className="bg-[#FAF7F2] py-20 px-4 relative overflow-hidden">
@@ -178,33 +186,40 @@ export default function AboutPage() {
       </section>
 
       {/* TikTok CTA */}
-      <section className="py-24 px-4 bg-white border-t border-gray-100">
-        <div className="max-w-4xl mx-auto bg-[#2C4631] rounded-[3rem] p-10 md:p-16 text-center relative overflow-hidden shadow-2xl">
+      <section className="py-12 md:py-16 px-4 bg-white border-t border-gray-100">
+        <div className="max-w-5xl mx-auto bg-[#2C4631] rounded-3xl p-8 md:p-10 relative overflow-hidden shadow-xl flex flex-col md:flex-row items-center justify-between gap-8">
+          {/* Background Elements */}
           <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 pointer-events-none mix-blend-overlay"></div>
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#D98C1F] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
           
-          <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center mx-auto mb-8 border border-white/20">
-            <Play className="w-8 h-8 text-white fill-white translate-x-0.5" />
+          <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left flex-1">
+            <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">
+              <Play className="w-6 h-6 text-white fill-white translate-x-0.5" />
+            </div>
+            <div>
+              <h2 className="font-display font-bold text-white text-2xl md:text-3xl mb-3 leading-tight">
+                Join Our Community on TikTok
+              </h2>
+              <p className="text-white/80 text-sm md:text-base max-w-lg mx-auto md:mx-0">
+                Watch our cooking process behind the scenes, discover new products, and see why thousands of families love SL Fathima&apos;s Foods.
+              </p>
+            </div>
           </div>
-          
-          <h2 className="font-display font-bold text-white text-3xl md:text-5xl mb-6 relative z-10 leading-tight">
-            Join Our Community on TikTok
-          </h2>
-          <p className="text-white/80 text-lg mb-10 max-w-2xl mx-auto relative z-10">
-            Watch our cooking process behind the scenes, discover new products, and see why thousands of families love SL Fathima&apos;s Foods.
-          </p>
-          <a
-            href="https://www.tiktok.com/@sl.fathimas.products"
-            target="_blank"
-            rel="noopener noreferrer"
-            id="about-tiktok-link"
-            className="relative z-10 inline-flex items-center gap-3 bg-white text-[#2C4631] hover:bg-[#FAF7F2] font-bold px-8 py-4 rounded-2xl transition-all duration-300 shadow-xl hover:scale-105"
-          >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.07 8.07 0 004.77 1.54V6.78s-.51.03-.99-.09z"/>
-            </svg>
-            @sl.fathimas.products
-          </a>
+
+          <div className="relative z-10 shrink-0">
+            <a
+              href="https://www.tiktok.com/@sl.fathimas.products?_r=1&_t=ZS-9724WrpOIGF"
+              target="_blank"
+              rel="noopener noreferrer"
+              id="about-tiktok-link"
+              className="inline-flex items-center gap-3 bg-white text-[#2C4631] hover:bg-[#FAF7F2] font-semibold px-6 py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.07 8.07 0 004.77 1.54V6.78s-.51.03-.99-.09z"/>
+              </svg>
+              @sl.fathimas.products
+            </a>
+          </div>
         </div>
       </section>
     </div>

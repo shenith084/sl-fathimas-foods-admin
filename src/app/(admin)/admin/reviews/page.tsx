@@ -19,22 +19,34 @@ interface Review {
 
 export default function AdminReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [productsMap, setProductsMap] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
       try {
-        const q = query(collection(db, "reviews"), orderBy("created_at", "desc"));
-        const snap = await getDocs(q);
-        const data = snap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-          createdAt: d.data().created_at?.toDate?.()?.toISOString() || null,
-        })) as Review[];
-        setReviews(data);
-      } catch {
-        setReviews([]);
+        const [reviewsRes, productsRes] = await Promise.all([
+          fetch("/api/v1/reviews"),
+          fetch("/api/v1/products")
+        ]);
+
+        const reviewsJson = await reviewsRes.json();
+        const productsJson = await productsRes.json();
+
+        if (reviewsJson.success) {
+          setReviews(reviewsJson.data);
+        }
+
+        if (productsJson.success) {
+          const map: Record<string, string> = {};
+          productsJson.data.forEach((p: any) => {
+            map[p.id] = p.name;
+          });
+          setProductsMap(map);
+        }
+      } catch (err) {
+        console.error("Failed to load reviews or products", err);
       } finally {
         setLoading(false);
       }
@@ -45,8 +57,20 @@ export default function AdminReviewsPage() {
   async function updateStatus(id: string, status: "approved" | "rejected") {
     setUpdating(id);
     try {
-      await updateDoc(doc(db, "reviews", id), { status });
-      setReviews((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
+      const res = await fetch(`/api/v1/reviews/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+      const json = await res.json();
+      if (json.success) {
+        setReviews((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
+      } else {
+        alert(json.error || "Failed to update review status");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error updating review status");
     } finally {
       setUpdating(null);
     }
@@ -96,7 +120,7 @@ export default function AdminReviewsPage() {
                     <td className="px-5 py-3.5">
                       <p className="text-sm text-[#444] max-w-xs line-clamp-2">{review.comment || "—"}</p>
                     </td>
-                    <td className="px-5 py-3.5 text-xs font-mono text-[#aaa]">{review.product_id?.substring(0, 10) || "—"}</td>
+                    <td className="px-5 py-3.5 text-xs font-mono text-[#444] font-medium">{productsMap[review.product_id] || review.product_id?.substring(0, 10) || "—"}</td>
                     <td className="px-5 py-3.5">
                       <StatusBadge status={review.status} />
                     </td>

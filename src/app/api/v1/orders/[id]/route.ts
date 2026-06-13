@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrderById, updateOrderStatus } from "@/lib/services/orderService";
+import { getOrderById, updateOrderStatus, reduceStockForOrder } from "@/lib/services/orderService";
 import { logAuditAction } from "@/lib/services/auditService";
 import { sendStatusUpdateEmail } from "@/lib/services/emailService";
 
@@ -41,6 +41,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         );
       } catch (err) {
         console.error("Status update email failed:", err);
+      }
+    }
+
+    // Auto-reduce stock when processing
+    if (oldOrder && status === "processing" && oldOrder.status !== "processing") {
+      try {
+        await reduceStockForOrder(oldOrder);
+      } catch (err) {
+        console.error("Failed to reduce stock for confirmed order:", err);
       }
     }
 

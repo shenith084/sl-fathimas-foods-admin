@@ -28,7 +28,7 @@ const bestSellers: Product[] = [
     category: "BIRIYANI KIT",
     price: 1400,
     emoji: "🍛",
-    badge: "Best Seller",
+    badge: "Popular",
     rating: 4.9,
     reviewCount: 120,
   },
@@ -48,7 +48,7 @@ const bestSellers: Product[] = [
     category: "SAMBAL",
     price: 1250,
     emoji: "🌶️",
-    badge: "Best Seller",
+    badge: "Popular",
     rating: 4.9,
     reviewCount: 94,
   },
@@ -86,7 +86,7 @@ const bestSellers: Product[] = [
 ];
 
 const badgeColors: Record<string, string> = {
-  "Best Seller": "bg-[#D98C1F] text-white",
+  "Popular": "bg-[#D98C1F] text-white",
   New: "bg-[#2C4631] text-white",
   "Out of Stock": "bg-gray-400 text-white",
 };
@@ -191,18 +191,39 @@ export default function BestSellers() {
       .then(data => {
         if (data.success && data.data) {
           const liveData = data.data;
-          const merged = bestSellers.map(staticProd => {
-            const liveMatch = liveData.find((p: any) => p.slug === staticProd.id || p.id === staticProd.id);
-            if (liveMatch) {
-              return {
-                ...staticProd,
-                price: liveMatch.price || staticProd.price,
-                images: liveMatch.images || undefined,
-              };
-            }
-            return staticProd;
-          });
-          setProducts(merged);
+          
+          // Find any products marked as "Popular" in the database
+          const popularProducts = liveData.filter((p: any) => p.badge === "Popular");
+          
+          if (popularProducts.length > 0) {
+            // If the admin has marked products as popular, show those!
+            setProducts(popularProducts.map((p: any) => ({
+              id: p.id || p.slug,
+              name: p.name,
+              category: p.category ? p.category.replace(/-/g, " ").toUpperCase() : "PRODUCT",
+              price: p.price,
+              emoji: p.emoji || "📦",
+              weight: p.weight,
+              images: p.images,
+              badge: p.badge,
+              rating: p.rating || 4.9,
+              reviewCount: p.reviews || 0,
+            })));
+          } else {
+            // Fallback to updating prices on the default list if no popular products exist yet
+            const merged = bestSellers.map(staticProd => {
+              const liveMatch = liveData.find((p: any) => p.slug === staticProd.id || p.id === staticProd.id);
+              if (liveMatch) {
+                return {
+                  ...staticProd,
+                  price: liveMatch.price || staticProd.price,
+                  images: liveMatch.images || undefined,
+                };
+              }
+              return staticProd;
+            });
+            setProducts(merged);
+          }
         }
       })
       .catch(console.error);
@@ -224,11 +245,10 @@ export default function BestSellers() {
         <div className="flex items-end justify-between mb-8">
           <div>
             <p className="text-[#D98C1F] font-script text-2xl mb-1 tracking-wide">
-              Our Best Sellers
+              Our Popular Products
             </p>
             <h2 className="font-display font-bold text-[#222] text-2xl md:text-3xl">
-              Best Selling{" "}
-              <span className="text-[#D98C1F]">Products</span>
+              Popular <span className="text-[#D98C1F]">Products</span>
             </h2>
           </div>
           <Link

@@ -12,14 +12,33 @@ export const metadata: Metadata = {
   },
 };
 
-const reviews = [
-  { name: "Amina R.", location: "Colombo", rating: 5, product: "Biriyani Combo Kit", comment: "Absolutely amazing! The biriyani came out restaurant quality — my whole family loved it. Will definitely order again.", date: "2 days ago", initials: "AR" },
-  { name: "Nurul H.", location: "Kandy", rating: 5, product: "Chicken Pickle", comment: "The best homemade pickle I've ever tasted. You can really feel the love and quality in every bite. Fast delivery too!", date: "1 week ago", initials: "NH" },
-  { name: "Fatima K.", location: "Galle", rating: 5, product: "Chicken Sambal", comment: "Reminded me of my grandmother's cooking. So authentic and flavourful. No artificial taste at all!", date: "1 week ago", initials: "FK" },
-  { name: "Sara M.", location: "Jaffna", rating: 4, product: "Dry Fish Sambal", comment: "Very tasty and well-packed. The vacuum option is great for overseas orders. Highly recommended!", date: "2 weeks ago", initials: "SM" },
-  { name: "Roshani P.", location: "Kurunegala", rating: 5, product: "Gift Pack", comment: "Ordered a gift pack for my mother's birthday — she absolutely loved it! Beautiful packaging and delicious products.", date: "2 weeks ago", initials: "RP" },
-  { name: "Ayesha B.", location: "Colombo", rating: 5, product: "Beef Sambal", comment: "Been a loyal customer for 6 months now. Quality is always consistent. Fathima aunty's food is the best!", date: "3 weeks ago", initials: "AB" },
-];
+import { adminDb } from "@/lib/firebase/admin";
+
+async function getApprovedReviews() {
+  const snap = await adminDb.collection("reviews")
+    .where("status", "==", "approved")
+    .get();
+
+  const reviews = snap.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+    createdAt: doc.data().created_at?.toDate?.()?.toISOString() || null,
+  })) as any[];
+
+  reviews.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+
+  // Also fetch products to get their names
+  const productsSnap = await adminDb.collection("products").get();
+  const productsMap: Record<string, string> = {};
+  productsSnap.docs.forEach(doc => {
+    productsMap[doc.id] = doc.data().name;
+  });
+
+  return reviews.map(r => ({
+    ...r,
+    productName: productsMap[r.product_id] || "Product"
+  }));
+}
 
 function Stars({ rating }: { rating: number }) {
   return (
@@ -33,8 +52,9 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-export default function ReviewsPage() {
-  const avg = (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1);
+export default async function ReviewsPage() {
+  const reviews = await getApprovedReviews();
+  const avg = reviews.length > 0 ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : "5.0";
 
   return (
     <div className="bg-[#FAF7F2] min-h-screen">
@@ -57,23 +77,29 @@ export default function ReviewsPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
         {/* Reviews grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
-          {reviews.map((r, i) => (
+          {reviews.length === 0 ? (
+            <div className="col-span-full text-center py-12 text-[#666]">
+              No reviews available yet.
+            </div>
+          ) : reviews.map((r, i) => (
             <div key={i} className="bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow duration-300">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-[#2C4631] rounded-full flex items-center justify-center text-white font-display font-bold text-sm flex-shrink-0">
-                    {r.initials}
+                    {r.user_name ? r.user_name[0].toUpperCase() : "A"}
                   </div>
                   <div>
-                    <p className="font-semibold text-[#222] text-sm">{r.name}</p>
-                    <p className="text-[#999] text-xs">{r.location}</p>
+                    <p className="font-semibold text-[#222] text-sm">{r.user_name || "Anonymous"}</p>
+                    <p className="text-[#999] text-xs">Verified Buyer</p>
                   </div>
                 </div>
-                <span className="text-[#999] text-xs">{r.date}</span>
+                <span className="text-[#999] text-xs">
+                  {r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "Recently"}
+                </span>
               </div>
               <Stars rating={r.rating} />
               <span className="inline-block mt-2 mb-3 text-[10px] bg-[#D98C1F]/10 text-[#D98C1F] px-2 py-0.5 rounded-full font-medium">
-                {r.product}
+                {r.productName}
               </span>
               <p className="text-[#555] text-sm leading-relaxed">&ldquo;{r.comment}&rdquo;</p>
             </div>

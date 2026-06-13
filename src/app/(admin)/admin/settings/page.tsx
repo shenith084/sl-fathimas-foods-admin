@@ -110,19 +110,6 @@ export default function AdminSettingsPage() {
                 className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#D98C1F] focus:ring-2 focus:ring-[#D98C1F]/20"
               />
             </div>
-            <div>
-              <label className="block text-xs font-semibold text-[#555] mb-1.5">
-                Free Delivery Threshold (LKR)
-              </label>
-              <input
-                type="number" min="0"
-                value={settings.freeDeliveryThreshold || ""}
-                onChange={(e) => update("freeDeliveryThreshold", Number(e.target.value))}
-                placeholder="5000"
-                className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#D98C1F] focus:ring-2 focus:ring-[#D98C1F]/20"
-              />
-              <p className="text-xs text-[#aaa] mt-1">Orders above this value get free delivery</p>
-            </div>
           </div>
         </div>
 

@@ -18,6 +18,7 @@ const features: Array<{ key: keyof AppPermissions; label: string }> = [
   { key: "users", label: "Users" },
   { key: "roles", label: "Roles" },
   { key: "content", label: "Content" },
+  { key: "messages", label: "Messages" },
   { key: "settings", label: "Settings" },
 ];
 
@@ -204,7 +205,7 @@ export default function RoleModal({ role, isCallerSuperAdmin, onClose, onSuccess
             
             <div className="space-y-4">
               {features.map((feature) => {
-                const perms = permissions[feature.key];
+                const perms = permissions[feature.key] || { create: false, read: false, update: false, delete: false };
                 const isAllSelected = perms.create && perms.read && perms.update && perms.delete;
 
                 return (

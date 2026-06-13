@@ -24,31 +24,33 @@ export default function AdminHeader({ title }: { title?: string }) {
   };
 
   return (
-    <header className="h-14 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0 z-30 shadow-sm">
-      <div className="flex items-center gap-3">
+    <header className="h-14 bg-transparent flex items-center justify-between px-6 pt-2 sticky top-0 z-30">
+      <div className="flex flex-col">
         {title && (
-          <h1 className="text-[#222] font-semibold text-base">{title}</h1>
+          <h1 className="text-[#222] font-bold text-lg">{title}</h1>
         )}
       </div>
 
       <div className="flex items-center gap-3">
         {/* Notifications bell */}
-        <button className="relative w-9 h-9 rounded-xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center transition-colors">
+        <button className="relative w-9 h-9 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center transition-colors shadow-sm">
           <Bell className="w-4 h-4 text-[#666]" />
+          <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 border border-white rounded-full"></span>
         </button>
 
         {/* User avatar */}
         <div className="relative">
           <button
             onClick={() => setShowDropdown(!showDropdown)}
-            className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
+            className="flex items-center gap-2 px-2 py-1.5 rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm"
           >
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#D98C1F] to-[#B8740F] flex items-center justify-center">
-              <User className="w-4 h-4 text-white" />
+            <div className="w-6 h-6 rounded-full bg-[#E88E23] flex items-center justify-center">
+              <User className="w-3 h-3 text-white" />
             </div>
-            <span className="text-xs text-[#444] font-medium max-w-[120px] truncate hidden sm:block">
+            <span className="text-xs text-[#444] font-medium pr-1 max-w-[120px] truncate hidden sm:block">
               {userEmail || "Admin"}
             </span>
+            <svg className="w-3 h-3 text-[#888] mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </button>
 
           {showDropdown && (

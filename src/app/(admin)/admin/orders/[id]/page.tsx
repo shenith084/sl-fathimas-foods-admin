@@ -7,11 +7,11 @@ import { ChevronLeft, Check } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
 import StatusBadge from "@/components/admin/StatusBadge";
 
-const ORDER_WORKFLOW = ["pending", "confirmed", "preparing", "packed", "dispatched", "delivered", "completed"];
+const ORDER_WORKFLOW = ["pending", "processing", "dispatched", "delivered"];
 
 interface Order {
   id: string;
-  items: { name: string; price: number; qty: number; emoji: string; vacuum?: boolean }[];
+  items: { name: string; price: number; qty: number; emoji: string; vacuum?: boolean; description?: string }[];
   shippingDetails: { firstName: string; lastName: string; email: string; phone: string; address: string; city: string; district: string };
   paymentDetails: { method: string; status: string; receiptUrl?: string };
   subtotal: number;
@@ -147,6 +147,11 @@ export default function OrderDetailPage() {
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-[#222]">{item.name}</p>
                     {item.vacuum && <p className="text-xs text-[#D98C1F]">+ Vacuum packaging</p>}
+                    {item.description && (
+                      <p className="text-xs text-[#666] mt-2 whitespace-pre-line border-l border-[#D98C1F]/30 pl-2">
+                        {item.description}
+                      </p>
+                    )}
                   </div>
                   <p className="text-sm text-[#666]">×{item.qty}</p>
                   <p className="text-sm font-bold text-[#222]">LKR {((item.price + (item.vacuum ? 50 : 0)) * item.qty).toLocaleString()}</p>

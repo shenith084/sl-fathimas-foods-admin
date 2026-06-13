@@ -9,6 +9,7 @@ export interface OrderItem {
   emoji: string;
   weight: string;
   vacuum?: boolean;
+  subItems?: { id: string; qty: number }[];
 }
 
 export interface Order {
@@ -53,8 +54,8 @@ export async function getOrders(statusFilter?: string, limit = 100): Promise<Ord
   return snapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
-    createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || null,
-    updatedAt: doc.data().updatedAt?.toDate?.()?.toISOString() || null,
+    createdAt: doc.data().createdAt?.toDate ? doc.data().createdAt.toDate().toISOString() : doc.data().createdAt || null,
+    updatedAt: doc.data().updatedAt?.toDate ? doc.data().updatedAt.toDate().toISOString() : doc.data().updatedAt || null,
   })) as Order[];
 }
 
@@ -64,8 +65,8 @@ export async function getOrderById(id: string): Promise<Order | null> {
   return {
     id: doc.id,
     ...doc.data(),
-    createdAt: doc.data()?.createdAt?.toDate?.()?.toISOString() || null,
-    updatedAt: doc.data()?.updatedAt?.toDate?.()?.toISOString() || null,
+    createdAt: doc.data()?.createdAt?.toDate ? doc.data().createdAt.toDate().toISOString() : doc.data()?.createdAt || null,
+    updatedAt: doc.data()?.updatedAt?.toDate ? doc.data().updatedAt.toDate().toISOString() : doc.data()?.updatedAt || null,
   } as Order;
 }
 
@@ -85,4 +86,22 @@ export async function updateOrderStatus(
     updatedAt: FieldValue.serverTimestamp(),
     status_history: FieldValue.arrayUnion(historyEntry),
   });
+}
+
+export async function reduceStockForOrder(order: Order): Promise<void> {
+  const batch = adminDb.batch();
+  
+  for (const item of order.items) {
+    if (item.subItems && item.subItems.length > 0) {
+      for (const subItem of item.subItems) {
+        const productRef = adminDb.collection("products").doc(subItem.id);
+        batch.update(productRef, { stock_count: FieldValue.increment(-(item.qty * subItem.qty)) });
+      }
+    } else if (!item.id.startsWith("custom-gift-pack")) {
+      const productRef = adminDb.collection("products").doc(item.id);
+      batch.update(productRef, { stock_count: FieldValue.increment(-item.qty) });
+    }
+  }
+  
+  await batch.commit();
 }

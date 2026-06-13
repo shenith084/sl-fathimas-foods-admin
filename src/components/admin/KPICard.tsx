@@ -26,21 +26,26 @@ const iconColorMap = {
 
 export default function KPICard({ title, value, icon, trend, trendLabel, color = "gold" }: KPICardProps) {
   return (
-    <div className={`bg-gradient-to-br ${colorMap[color]} border rounded-2xl p-5`}>
-      <div className="flex items-start justify-between mb-3">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconColorMap[color]}`}>
-          {icon}
-        </div>
-        {trend !== undefined && (
-          <div className={`flex items-center gap-1 text-xs font-medium ${trend >= 0 ? "text-emerald-600" : "text-red-500"}`}>
-            {trend >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-            {Math.abs(trend)}%
-          </div>
-        )}
+    <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm flex flex-col justify-between">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${iconColorMap[color]}`}>
+        {icon}
       </div>
-      <p className="text-2xl font-bold text-[#222] mb-1">{value}</p>
-      <p className="text-xs text-[#888]">{title}</p>
-      {trendLabel && <p className="text-[10px] text-[#aaa] mt-0.5">{trendLabel}</p>}
+      <div>
+        <p className="text-2xl font-bold text-[#222] mb-1 leading-none">{value}</p>
+        <p className="text-xs text-[#888] font-medium">{title}</p>
+      </div>
+      {trend !== undefined && (
+        <div className={`mt-4 flex items-center gap-1.5 text-xs font-semibold ${trend >= 0 ? "text-emerald-500" : "text-red-500"}`}>
+          {trend >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+          <span>{Math.abs(trend)}% from last month</span>
+          {trendLabel && <span className="ml-auto text-[#E88E23] font-medium">{trendLabel}</span>}
+        </div>
+      )}
+      {trend === undefined && trendLabel && (
+        <div className="mt-4 text-xs text-[#E88E23] font-medium">
+          {trendLabel}
+        </div>
+      )}
     </div>
   );
 }

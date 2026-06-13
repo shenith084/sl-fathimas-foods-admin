@@ -7,6 +7,7 @@ import { Send, MapPin, Phone, Mail, Clock } from "lucide-react";
 export default function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [settings, setSettings] = useState<any>(null);
   
   useEffect(() => {
@@ -20,10 +21,30 @@ export default function ContactPage() {
   const email = settings?.businessEmail || "slfathimasfoods@gmail.com";
   const address = settings?.businessAddress || "Sri Lanka";
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Will be wired to API in Phase 6
-    setSent(true);
+    setSubmitting(true);
+    try {
+      const response = await fetch("/api/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to submit message");
+      }
+      
+      setSent(true);
+      setForm({ name: "", email: "", phone: "", subject: "", message: "" });
+    } catch (error) {
+      console.error("Error submitting message:", error);
+      alert("There was an error sending your message. Please try again or contact us directly.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -34,7 +55,7 @@ export default function ContactPage() {
           Get in Touch
         </span>
         <h1 className="font-display font-bold text-[#222] text-3xl md:text-4xl mb-4">
-          Contact <span className="text-[#D98C1F]">Us</span>
+          Contact <span className="text-[#D98C1F] italic font-serif">Us</span>
         </h1>
         <p className="text-[#666] max-w-lg mx-auto">
           Have a question, custom order request, or just want to say hello? We&apos;d love to hear from you!
@@ -89,7 +110,7 @@ export default function ContactPage() {
               <div>
                 <p className="text-white/60 text-xs">TikTok</p>
                 <a
-                  href="https://www.tiktok.com/@sl.fathimas.products"
+                  href="https://www.tiktok.com/@sl.fathimas.products?_r=1&_t=ZS-9724WrpOIGF"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-white font-semibold text-sm hover:text-[#D98C1F] transition-colors"
@@ -190,11 +211,21 @@ export default function ContactPage() {
 
                 <button
                   type="submit"
+                  disabled={submitting}
                   id="contact-submit-btn"
-                  className="w-full flex items-center justify-center gap-2 bg-[#D98C1F] hover:bg-[#B8740F] text-white font-semibold py-4 rounded-2xl transition-all duration-200 shadow-md hover:shadow-lg"
+                  className="w-full flex items-center justify-center gap-2 bg-[#D98C1F] hover:bg-[#B8740F] text-white font-semibold py-4 rounded-2xl transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  <Send className="w-4 h-4" />
-                  Send Message
+                  {submitting ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      Send Message
+                    </>
+                  )}
                 </button>
               </form>
             )}

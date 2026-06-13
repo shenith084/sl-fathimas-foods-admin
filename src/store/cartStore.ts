@@ -9,6 +9,8 @@ export interface CartItem {
   emoji: string;
   weight: string;
   vacuum: boolean; // Custom Sri Lankan export vacuum option (+50 LKR)
+  description?: string; // Used for custom bundles/gift packs
+  subItems?: { id: string; qty: number }[]; // Track IDs of items inside bundles for stock management
 }
 
 interface CartStore {

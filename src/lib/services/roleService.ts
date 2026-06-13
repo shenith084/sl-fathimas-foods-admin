@@ -18,6 +18,7 @@ export type AppPermissions = {
   roles: FeaturePermissions;
   settings: FeaturePermissions;
   content: FeaturePermissions;
+  messages: FeaturePermissions;
 };
 
 export interface Role {
@@ -39,6 +40,7 @@ export const defaultPermissions: AppPermissions = {
   roles: { create: false, read: false, update: false, delete: false },
   settings: { create: false, read: false, update: false, delete: false },
   content: { create: false, read: false, update: false, delete: false },
+  messages: { create: false, read: false, update: false, delete: false },
 };
 
 /** Gets the current user's Firebase ID token for authorized API calls */
@@ -67,6 +69,7 @@ export async function ensureSuperAdminRole() {
           roles: { create: true, read: true, update: true, delete: true },
           settings: { create: true, read: true, update: true, delete: true },
           content: { create: true, read: true, update: true, delete: true },
+          messages: { create: true, read: true, update: true, delete: true },
         },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

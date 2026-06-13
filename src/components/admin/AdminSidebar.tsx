@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Package, ShoppingCart, Users, BarChart2,
-  Star, FileText, Settings, Shield, Box, ChevronRight,
+  Star, FileText, Settings, Shield, Box, ChevronRight, MessageSquare,
 } from "lucide-react";
 import { AppPermissions } from "@/lib/services/roleService";
 
@@ -12,9 +12,9 @@ import { AppPermissions } from "@/lib/services/roleService";
 // Items with no permissionKey are always visible (e.g. Dashboard)
 const navItems = [
   { label: "Dashboard",    href: "/admin/dashboard",  icon: LayoutDashboard,  permissionKey: null },
+  { label: "Messages",     href: "/admin/messages",   icon: MessageSquare,     permissionKey: "messages" },
   { label: "Products",     href: "/admin/products",   icon: Package,           permissionKey: "products" },
   { label: "Orders",       href: "/admin/orders",     icon: ShoppingCart,      permissionKey: "orders" },
-  { label: "Customers",    href: "/admin/customers",  icon: Users,             permissionKey: "customers" },
   { label: "Stock",        href: "/admin/stock",      icon: Box,               permissionKey: "products" },
   { label: "Reviews",      href: "/admin/reviews",    icon: Star,              permissionKey: "content" },
   { label: "Reports",      href: "/admin/reports",    icon: BarChart2,         permissionKey: "settings" },
@@ -46,23 +46,23 @@ export default function AdminSidebar({ permissions, isAdminPrivileges }: AdminSi
   const visibleItems = navItems.filter(item => canSee(item.permissionKey));
 
   return (
-    <aside className="fixed top-0 left-0 h-screen w-60 bg-[#1F1F1F] flex flex-col z-40 shadow-2xl">
+    <aside className="fixed top-0 left-0 h-screen w-60 bg-[#18181A] flex flex-col z-40 shadow-2xl border-r border-white/5">
       {/* Logo */}
-      <div className="px-6 py-5 border-b border-white/10">
-        <Link href="/admin/dashboard" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg overflow-hidden bg-black">
+      <div className="px-6 py-5 border-b border-white/5 flex flex-col items-center justify-center">
+        <Link href="/admin/dashboard" className="flex flex-col items-center gap-2">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-lg overflow-hidden bg-black border border-[#D98C1F]/20 relative">
             <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
           </div>
-          <div>
-            <p className="text-white font-bold text-sm leading-tight">Fathima&apos;s</p>
-            <p className="text-[#D98C1F] text-[10px] font-medium tracking-widest uppercase">Admin Panel</p>
+          <div className="text-center">
+            <p className="text-white font-bold text-sm leading-none mb-0.5 tracking-wide">Fathima&apos;s</p>
+            <p className="text-[#D98C1F] text-[9px] font-bold tracking-[0.2em] uppercase">Admin Panel</p>
           </div>
         </Link>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
-        <p className="text-[#555] text-[10px] font-semibold tracking-widest uppercase px-3 mb-3">Menu</p>
+        <p className="text-[#666] text-[10px] font-semibold tracking-widest uppercase px-3 mb-3">Menu</p>
         <ul className="space-y-0.5">
           {visibleItems.map((item) => {
             const Icon = item.icon;
@@ -71,15 +71,15 @@ export default function AdminSidebar({ permissions, isAdminPrivileges }: AdminSi
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
                     isActive
-                      ? "bg-[#D98C1F]/15 text-[#D98C1F]"
+                      ? "bg-gradient-to-r from-[#B8740F] to-[#D98C1F] text-white shadow-md"
                       : "text-[#888] hover:bg-white/5 hover:text-white"
                   }`}
                 >
-                  <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-[#D98C1F]" : "text-[#666] group-hover:text-[#aaa]"}`} />
+                  <Icon className={`w-4 h-4 flex-shrink-0 transition-colors ${isActive ? "text-white" : "text-[#666] group-hover:text-white"}`} />
                   <span className="flex-1">{item.label}</span>
-                  {isActive && <ChevronRight className="w-3 h-3 opacity-60" />}
+                  {isActive && <ChevronRight className="w-3 h-3 text-white/80" />}
                 </Link>
               </li>
             );
@@ -88,13 +88,13 @@ export default function AdminSidebar({ permissions, isAdminPrivileges }: AdminSi
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-4 border-t border-white/10">
+      <div className="px-4 py-4 border-t border-white/5">
         <Link
           href="/"
           target="_blank"
-          className="flex items-center gap-2 text-xs text-[#555] hover:text-[#888] transition-colors"
+          className="flex items-center gap-2 text-xs text-[#888] hover:text-white transition-colors"
         >
-          <span>← View Public Site</span>
+          <span className="opacity-80">←</span> View Public Site
         </Link>
       </div>
     </aside>

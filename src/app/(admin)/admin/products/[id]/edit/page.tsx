@@ -79,7 +79,8 @@ export default function EditProductPage() {
         });
 
         try {
-          finalImages = await Promise.all(uploadPromises);
+          const newImages = await Promise.all(uploadPromises);
+          finalImages = [...finalImages, ...newImages];
         } catch (uploadError) {
           console.error("Image upload failed:", uploadError);
           alert("Some images failed to upload. Please try again.");
@@ -156,9 +157,12 @@ export default function EditProductPage() {
                     className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#D98C1F] bg-white"
                   >
                     <option value="">Select category</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
+                    {categories.flatMap((c) => [
+                      <option key={c.id} value={c.id} className="font-semibold">{c.name}</option>,
+                      ...(c.subCategories || []).map((sc) => (
+                        <option key={sc.id} value={sc.id}>— {sc.name}</option>
+                      ))
+                    ])}
                   </select>
                 </div>
               </div>
@@ -173,35 +177,62 @@ export default function EditProductPage() {
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#D98C1F]/10 file:text-[#D98C1F] hover:file:bg-[#D98C1F]/20 cursor-pointer"
                     onChange={(e) => {
                       if (e.target.files) {
-                        const files = Array.from(e.target.files).slice(0, 3);
-                        update("imageFiles", files);
+                        const currentUploadedCount = (form as any).images?.length || 0;
+                        const currentPendingCount = (form as any).imageFiles?.length || 0;
+                        const availableSlots = 3 - currentUploadedCount - currentPendingCount;
+                        if (availableSlots > 0) {
+                          const newFiles = Array.from(e.target.files).slice(0, availableSlots);
+                          update("imageFiles", [...((form as any).imageFiles || []), ...newFiles]);
+                        }
+                        // Reset input so the same file could be selected again if removed
+                        e.target.value = "";
                       }
                     }}
                   />
-                  <p className="text-xs text-gray-400 mt-2">Select new images to replace the current ones. Max 3 images.</p>
+                  <p className="text-xs text-gray-400 mt-2">Add up to 3 images total.</p>
                 </div>
 
-                {/* Show new selected files preview */}
-                {(form as any).imageFiles && ((form as any).imageFiles as File[]).length > 0 ? (
-                  <div className="flex gap-2 mt-3">
-                    {((form as any).imageFiles as File[]).map((f, i) => (
-                      <div key={i} className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden relative border border-gray-200">
-                        <img src={URL.createObjectURL(f)} className="object-cover w-full h-full" alt="preview" />
+                {/* Show existing images with delete option */}
+                {(form as any).images && ((form as any).images as string[]).length > 0 && (
+                  <div className="flex flex-wrap gap-3 mt-4">
+                    {((form as any).images as string[]).map((url, i) => (
+                      <div key={`exist-${i}`} className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden relative border border-gray-200 group">
+                        <img src={url} className="object-cover w-full h-full" alt="current" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newImages = ((form as any).images as string[]).filter((_, idx) => idx !== i);
+                            update("images", newImages);
+                          }}
+                          className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <span className="text-white text-xs font-bold bg-red-600 px-2 py-1 rounded">Delete</span>
+                        </button>
                       </div>
                     ))}
                   </div>
-                ) : (
-                  /* Show existing images from database if no new files selected */
-                  (form as any).images && ((form as any).images as string[]).length > 0 && (
-                    <div className="flex gap-2 mt-3">
-                      <p className="text-xs text-gray-500 w-full mb-1">Current Images:</p>
-                      {((form as any).images as string[]).map((url, i) => (
-                        <div key={i} className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden relative border border-gray-200">
-                          <img src={url} className="object-cover w-full h-full" alt="current" />
-                        </div>
-                      ))}
-                    </div>
-                  )
+                )}
+                
+                {/* Show new selected files preview */}
+                {(form as any).imageFiles && ((form as any).imageFiles as File[]).length > 0 && (
+                  <div className="flex flex-wrap gap-3 mt-4">
+                    <p className="text-xs text-gray-500 w-full mb-1">New images to be added:</p>
+                    {((form as any).imageFiles as File[]).map((f, i) => (
+                      <div key={`new-${i}`} className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden relative border border-gray-200 group">
+                        <img src={URL.createObjectURL(f)} className="object-cover w-full h-full" alt="preview" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newPending = ((form as any).imageFiles as File[]).filter((_, idx) => idx !== i);
+                            update("imageFiles", newPending);
+                          }}
+                          className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <span className="text-white text-xs font-bold bg-red-600 px-2 py-1 rounded">Remove</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
 

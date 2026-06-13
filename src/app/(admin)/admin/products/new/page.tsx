@@ -139,9 +139,12 @@ export default function NewProductPage() {
                     className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#D98C1F] focus:ring-2 focus:ring-[#D98C1F]/20 transition-colors bg-white"
                   >
                     <option value="">Select category</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
+                    {categories.flatMap((c) => [
+                      <option key={c.id} value={c.id} className="font-semibold">{c.name}</option>,
+                      ...(c.subCategories || []).map((sc) => (
+                        <option key={sc.id} value={sc.id}>— {sc.name}</option>
+                      ))
+                    ])}
                   </select>
                 </div>
               </div>
@@ -156,19 +159,33 @@ export default function NewProductPage() {
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#D98C1F]/10 file:text-[#D98C1F] hover:file:bg-[#D98C1F]/20 cursor-pointer"
                     onChange={(e) => {
                       if (e.target.files) {
-                        const files = Array.from(e.target.files).slice(0, 3);
-                        update("imageFiles", files);
+                        const currentPendingCount = (form as any).imageFiles?.length || 0;
+                        const availableSlots = 3 - currentPendingCount;
+                        if (availableSlots > 0) {
+                          const newFiles = Array.from(e.target.files).slice(0, availableSlots);
+                          update("imageFiles", [...((form as any).imageFiles || []), ...newFiles]);
+                        }
+                        e.target.value = "";
                       }
                     }}
                   />
                   <p className="text-xs text-gray-400 mt-2">Select 1 to 3 images from your device. They will be uploaded when you click Create.</p>
                 </div>
-                {form.imageFiles && (form.imageFiles as File[]).length > 0 && (
-                  <div className="flex gap-2 mt-3">
-                    {(form.imageFiles as File[]).map((f, i) => (
-                      <div key={i} className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden relative border border-gray-200">
-                        {/* A tiny preview of the selected image using objectURL */}
+                {(form as any).imageFiles && ((form as any).imageFiles as File[]).length > 0 && (
+                  <div className="flex flex-wrap gap-3 mt-4">
+                    {((form as any).imageFiles as File[]).map((f, i) => (
+                      <div key={i} className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden relative border border-gray-200 group">
                         <img src={URL.createObjectURL(f)} className="object-cover w-full h-full" alt="preview" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newPending = ((form as any).imageFiles as File[]).filter((_, idx) => idx !== i);
+                            update("imageFiles", newPending);
+                          }}
+                          className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <span className="text-white text-xs font-bold bg-red-600 px-2 py-1 rounded">Remove</span>
+                        </button>
                       </div>
                     ))}
                   </div>

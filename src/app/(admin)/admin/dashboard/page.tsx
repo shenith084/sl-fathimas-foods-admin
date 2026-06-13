@@ -70,10 +70,10 @@ export default function AdminDashboardPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Dashboard"
-        subtitle={`Welcome back! Here's what's happening today.`}
-      />
+      <div className="mb-6">
+        <h1 className="text-[#222] font-bold text-xl mb-1">Dashboard</h1>
+        <p className="text-[#888] text-sm">Welcome back! Here's what's happening today.</p>
+      </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
@@ -104,29 +104,59 @@ export default function AdminDashboardPage() {
         />
       </div>
 
-      {/* Today Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-          <h3 className="text-sm font-semibold text-[#888] mb-3 flex items-center gap-2">
-            <ShoppingCart className="w-4 h-4" /> Today&apos;s Orders
-          </h3>
-          <p className="text-3xl font-bold text-[#222]">{report?.todayOrders || 0}</p>
-          <p className="text-sm text-[#888] mt-1">LKR {(report?.todayRevenue || 0).toLocaleString()} revenue</p>
+      {/* Middle Row: Today Overview + Status Breakdown */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {/* Today's Overview */}
+        <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm relative overflow-hidden flex flex-col items-center justify-center min-h-[280px]">
+          <div className="relative z-10 text-center flex flex-col items-center">
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 border border-blue-100">
+              <ShoppingCart className="w-5 h-5 text-blue-500" />
+            </div>
+            <h3 className="text-sm font-bold text-[#888] mb-2 uppercase tracking-wider">
+              Today's Overview
+            </h3>
+            <p className="text-6xl font-black text-[#222] mb-1 tracking-tight">{report?.todayOrders || 0}</p>
+            <p className="text-[#666] text-sm font-medium mb-4">Orders Today</p>
+            <div className="bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-full">
+              <p className="text-emerald-600 text-sm font-bold">LKR {(report?.todayRevenue || 0).toLocaleString()} revenue</p>
+            </div>
+          </div>
+          
+          {/* Graphic Illustration Background */}
+          <div className="absolute opacity-[0.03] pointer-events-none -right-8 -bottom-8">
+            <svg width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </div>
         </div>
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-          <h3 className="text-sm font-semibold text-[#888] mb-3 flex items-center gap-2">
-            <Package className="w-4 h-4" /> Order Status Breakdown
+
+        {/* Order Status Breakdown */}
+        <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col">
+          <h3 className="text-sm font-bold text-[#222] mb-4 flex items-center gap-2">
+            <Package className="w-4 h-4 text-[#888]" /> Order Status Breakdown
           </h3>
-          <div className="space-y-1.5">
-            {Object.entries(report?.statusBreakdown || {}).map(([status, count]) => (
-              <div key={status} className="flex items-center justify-between">
-                <StatusBadge status={status} />
-                <span className="text-sm font-bold text-[#444]">{count}</span>
+          <div className="flex-1 flex flex-col justify-center space-y-5">
+            {[
+              { label: 'Pending', count: report?.statusBreakdown?.pending || 0, color: 'bg-orange-100 text-orange-600', bar: 'bg-orange-200' },
+              { label: 'Processing', count: report?.statusBreakdown?.processing || 0, color: 'bg-purple-100 text-purple-600', bar: 'bg-purple-200' },
+              { label: 'Dispatched', count: report?.statusBreakdown?.dispatched || 0, color: 'bg-teal-100 text-teal-600', bar: 'bg-teal-200' },
+              { label: 'Delivered', count: report?.statusBreakdown?.delivered || 0, color: 'bg-emerald-100 text-emerald-600', bar: 'bg-emerald-200' },
+              { label: 'Cancelled', count: report?.statusBreakdown?.cancelled || 0, color: 'bg-red-100 text-red-600', bar: 'bg-red-200' },
+            ].map(status => (
+              <div key={status.label} className="flex items-center gap-4">
+                <div className={`px-3 py-1 rounded-full text-xs font-semibold ${status.color} w-24 text-center`}>
+                  {status.label}
+                </div>
+                <div className="flex-1 h-1.5 bg-gray-50 rounded-full overflow-hidden">
+                  <div className={`h-full ${status.bar}`} style={{ width: status.count > 0 ? `${Math.min(status.count * 10, 100)}%` : '0%' }}></div>
+                </div>
+                <span className="text-sm font-bold text-[#444] w-4 text-right">{status.count}</span>
               </div>
             ))}
-            {Object.keys(report?.statusBreakdown || {}).length === 0 && (
-              <p className="text-xs text-[#aaa]">No orders yet</p>
-            )}
           </div>
         </div>
       </div>
@@ -134,45 +164,49 @@ export default function AdminDashboardPage() {
       {/* Grid: Recent Orders + Top Products */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Recent Orders */}
-        <div className="xl:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h3 className="font-semibold text-[#222]">Recent Orders</h3>
-            <Link href="/admin/orders" className="text-xs text-[#D98C1F] font-medium flex items-center gap-1 hover:underline">
+        <div className="xl:col-span-2 bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+          <div className="px-6 py-5 flex items-center justify-between border-b border-gray-50">
+            <h3 className="font-bold text-[#222] text-sm">Recent Orders</h3>
+            <Link href="/admin/orders" className="text-xs text-[#E88E23] font-semibold flex items-center gap-1 hover:underline">
               View all <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
           {recentOrders.length === 0 ? (
-            <div className="px-6 py-10 text-center">
-              <ShoppingCart className="w-8 h-8 text-[#ccc] mx-auto mb-2" />
-              <p className="text-sm text-[#aaa]">No orders yet</p>
+            <div className="px-6 py-8 text-center flex-1 flex flex-col items-center justify-center">
+              <ShoppingCart className="w-6 h-6 text-[#ccc] mx-auto mb-2" />
+              <p className="text-xs text-[#aaa]">No orders yet</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-[#FAFAFA] border-b border-gray-100">
-                    <th className="text-left text-xs font-semibold text-[#999] px-6 py-3">Order ID</th>
-                    <th className="text-left text-xs font-semibold text-[#999] px-6 py-3">Customer</th>
-                    <th className="text-left text-xs font-semibold text-[#999] px-6 py-3">Total</th>
-                    <th className="text-left text-xs font-semibold text-[#999] px-6 py-3">Status</th>
+                  <tr className="border-b border-gray-100 bg-gray-50/30">
+                    <th className="text-left text-xs font-semibold text-[#888] px-6 py-3">Order ID</th>
+                    <th className="text-left text-xs font-semibold text-[#888] px-6 py-3">Customer</th>
+                    <th className="text-left text-xs font-semibold text-[#888] px-6 py-3">Total</th>
+                    <th className="text-left text-xs font-semibold text-[#888] px-6 py-3">Status</th>
+                    <th className="text-left text-xs font-semibold text-[#888] px-6 py-3">Date</th>
                   </tr>
                 </thead>
                 <tbody>
                   {recentOrders.map((order) => (
-                    <tr key={order.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                    <tr key={order.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                       <td className="px-6 py-3">
-                        <Link href={`/admin/orders/${order.id}`} className="text-xs font-mono text-[#D98C1F] hover:underline">
-                          {order.id.substring(0, 8)}...
+                        <Link href={`/admin/orders/${order.id}`} className="text-xs font-bold text-[#222] hover:text-[#E88E23]">
+                          #SLF{order.id.substring(0, 5).toUpperCase()}
                         </Link>
                       </td>
-                      <td className="px-6 py-3 text-sm text-[#444]">
+                      <td className="px-6 py-3 text-xs font-medium text-[#666]">
                         {order.shippingDetails?.firstName} {order.shippingDetails?.lastName}
                       </td>
-                      <td className="px-6 py-3 text-sm font-semibold text-[#222]">
+                      <td className="px-6 py-3 text-xs font-medium text-[#666]">
                         LKR {order.total?.toLocaleString()}
                       </td>
                       <td className="px-6 py-3">
                         <StatusBadge status={order.status} />
+                      </td>
+                      <td className="px-6 py-3 text-[11px] font-medium text-[#888]">
+                        {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                       </td>
                     </tr>
                   ))}
@@ -183,57 +217,38 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Top Products */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h3 className="font-semibold text-[#222]">Top Products</h3>
-            <Link href="/admin/reports" className="text-xs text-[#D98C1F] font-medium hover:underline">
-              Reports
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+          <div className="px-6 py-5 flex items-center justify-between border-b border-gray-50">
+            <h3 className="font-bold text-[#222] text-sm">Top Products</h3>
+            <Link href="/admin/reports" className="text-xs text-[#E88E23] font-semibold flex items-center gap-1 hover:underline">
+              Reports <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
           {(report?.topProducts || []).length === 0 ? (
-            <div className="px-6 py-10 text-center">
-              <Package className="w-8 h-8 text-[#ccc] mx-auto mb-2" />
-              <p className="text-sm text-[#aaa]">No data yet</p>
+            <div className="px-6 py-8 text-center flex-1 flex flex-col items-center justify-center">
+              <Package className="w-6 h-6 text-[#ccc] mx-auto mb-2" />
+              <p className="text-xs text-[#aaa]">No data yet</p>
             </div>
           ) : (
-            <div className="px-6 py-4 space-y-4">
+            <div className="px-6 pb-4 pt-2 flex-1 flex flex-col justify-between">
               {(report?.topProducts || []).map((p, i) => (
-                <div key={p.name} className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-[#D98C1F]/10 flex items-center justify-center text-xs font-bold text-[#D98C1F] flex-shrink-0">
+                <div key={p.name} className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">
+                  <div className="w-5 h-5 rounded bg-[#FFF4E6] flex items-center justify-center text-[9px] font-bold text-[#E88E23] flex-shrink-0">
                     {i + 1}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[#222] truncate">{p.name}</p>
-                    <p className="text-xs text-[#888]">{p.qty} sold</p>
+                  <div className="w-8 h-8 rounded-lg bg-black overflow-hidden flex-shrink-0">
+                    <img src="/logo.png" alt={p.name} className="w-full h-full object-cover opacity-80" />
                   </div>
-                  <p className="text-sm font-bold text-[#444]">LKR {p.revenue.toLocaleString()}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-[#222] truncate">{p.name}</p>
+                    <p className="text-[9px] text-[#888] mt-0.5">{p.qty} sold</p>
+                  </div>
+                  <p className="text-xs font-bold text-[#222]">LKR {p.revenue.toLocaleString()}</p>
                 </div>
               ))}
             </div>
           )}
         </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="mt-6 bg-gradient-to-r from-[#1F1F1F] to-[#2a2a2a] rounded-2xl p-6 flex flex-wrap gap-3 items-center">
-        <div className="flex-1">
-          <p className="text-white font-semibold">Quick Actions</p>
-          <p className="text-[#888] text-xs mt-0.5">Common admin tasks</p>
-        </div>
-        {[
-          { label: "Add Product", href: "/admin/products/new" },
-          { label: "View Orders", href: "/admin/orders" },
-          { label: "Update Stock", href: "/admin/stock" },
-          { label: "View Reports", href: "/admin/reports" },
-        ].map((action) => (
-          <Link
-            key={action.href}
-            href={action.href}
-            className="px-4 py-2 bg-white/10 hover:bg-[#D98C1F] text-white text-sm font-medium rounded-xl transition-all duration-200"
-          >
-            {action.label}
-          </Link>
-        ))}
       </div>
     </div>
   );

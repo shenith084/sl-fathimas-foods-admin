@@ -12,6 +12,9 @@ import Script from "next/script";
 import { event as fbEvent } from "@/components/analytics/MetaPixel";
 import { ttevent } from "@/components/analytics/TikTokPixel";
 import Image from "next/image";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase/client";
+import ReviewModal from "@/components/products/ReviewModal";
 
 function StarRating({ rating, count }: { rating: number; count: number }) {
   return (
@@ -39,6 +42,17 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState("Description");
+
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -75,6 +89,19 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
     };
     fetchProduct();
   }, [slug]);
+
+  useEffect(() => {
+    if (product?.id) {
+      fetch(`/api/v1/reviews?status=approved&productId=${product.id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setReviews(data.data);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [product?.id]);
 
   if (loading) {
     return (
@@ -264,12 +291,21 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
               </span>
             </div>
 
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
-                <Check className="w-3 h-3 text-green-600" strokeWidth={3} />
+            {(product.stock_count ?? product.stock ?? 0) <= 0 ? (
+              <div className="flex items-center gap-2 mb-6">
+                <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
+                  <span className="w-3 h-3 text-red-600 flex items-center justify-center font-bold text-xs">!</span>
+                </div>
+                <span className="text-sm font-semibold text-red-600">Out of Stock</span>
               </div>
-              <span className="text-sm font-semibold text-green-600">In Stock</span>
-            </div>
+            ) : (
+              <div className="flex items-center gap-2 mb-6">
+                <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+                  <Check className="w-3 h-3 text-green-600" strokeWidth={3} />
+                </div>
+                <span className="text-sm font-semibold text-green-600">In Stock</span>
+              </div>
+            )}
 
             <p className="text-[#555] text-[15px] leading-relaxed mb-8">
               {product.description || "Everything you need to make delicious, authentic biriyani at home. Made with premium ingredients and traditional spices."}
@@ -297,9 +333,13 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
             <div className="flex flex-col gap-3 mb-10">
               <button
                 onClick={handleAddToCart}
-                disabled={added}
+                disabled={added || (product.stock_count ?? product.stock ?? 0) <= 0}
                 className={`w-full text-white font-bold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 ${
-                  added ? "bg-[#2C4631]" : "bg-[#D98C1F] hover:bg-[#B8740F]"
+                  added 
+                    ? "bg-[#2C4631]" 
+                    : (product.stock_count ?? product.stock ?? 0) <= 0 
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none" 
+                      : "bg-[#D98C1F] hover:bg-[#B8740F]"
                 }`}
               >
                 {added ? (
@@ -310,17 +350,19 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                 ) : (
                   <>
                     <ShoppingCart className="w-5 h-5" />
-                    ADD TO CART
+                    {(product.stock_count ?? product.stock ?? 0) <= 0 ? "OUT OF STOCK" : "ADD TO CART"}
                   </>
                 )}
               </button>
-              <Link
-                href="/checkout"
-                onClick={handleAddToCart}
-                className="w-full bg-[#2C4631] hover:bg-[#1E3322] text-white font-bold py-3 rounded-xl transition-colors shadow-md flex items-center justify-center text-center"
-              >
-                BUY NOW
-              </Link>
+              {(product.stock_count ?? product.stock ?? 0) > 0 && (
+                <Link
+                  href="/checkout"
+                  onClick={handleAddToCart}
+                  className="w-full bg-[#2C4631] hover:bg-[#1E3322] text-white font-bold py-3 rounded-xl transition-colors shadow-md flex items-center justify-center text-center"
+                >
+                  BUY NOW
+                </Link>
+              )}
             </div>
 
             {/* 4 Horizontal Trust Badges */}
@@ -461,6 +503,65 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
           )}
         </div>
 
+        {/* Reviews Section */}
+        <div className="mt-16 pt-16 border-t border-gray-200/60">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <div>
+              <h2 className="font-display font-bold text-[#222] text-2xl mb-1">
+                Customer <span className="text-[#D98C1F]">Reviews</span>
+              </h2>
+              <div className="flex items-center gap-2">
+                <StarRating rating={product.rating || 5} count={product.reviews || 0} />
+              </div>
+            </div>
+            {user ? (
+              <button 
+                onClick={() => setShowReviewModal(true)}
+                className="bg-[#2C4631] hover:bg-[#1E3322] text-white font-semibold px-6 py-3 rounded-xl transition-colors shadow-md"
+              >
+                Write a Review
+              </button>
+            ) : (
+              <Link href={`/auth?redirect=/products/${slug}`} className="bg-[#2C4631] hover:bg-[#1E3322] text-white font-semibold px-6 py-3 rounded-xl transition-colors shadow-md text-center">
+                Log in to Review
+              </Link>
+            )}
+          </div>
+
+          {reviews.length === 0 ? (
+            <div className="bg-white rounded-3xl p-10 text-center shadow-sm">
+              <span className="text-4xl mb-3 block">⭐</span>
+              <h3 className="font-display font-bold text-lg text-[#222] mb-1">No reviews yet</h3>
+              <p className="text-[#666] text-sm">Be the first to share your experience with this product!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {reviews.map((r, i) => (
+                <div key={i} className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-[#FAF7F2] rounded-full flex items-center justify-center text-[#D98C1F] font-display font-bold text-sm border border-[#D98C1F]/20">
+                        {r.user_name ? r.user_name[0].toUpperCase() : "A"}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-[#222] text-sm">{r.user_name || "Anonymous"}</p>
+                        <p className="text-[#999] text-xs">Verified Buyer</p>
+                      </div>
+                    </div>
+                    <span className="text-[#999] text-xs">
+                      {r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "Recently"}
+                    </span>
+                  </div>
+                  <div className="mb-3">
+                    <StarRating rating={r.rating} count={0} />
+                  </div>
+                  <p className="text-[#555] text-sm leading-relaxed">&ldquo;{r.comment}&rdquo;</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* You May Also Like */}
         <div className="mt-16">
           <h2 className="font-display font-bold text-[#222] text-2xl mb-6">
@@ -491,6 +592,19 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
           </div>
         </div>
       </div>
+      
+      {showReviewModal && user && (
+        <ReviewModal
+          productId={product.id}
+          userId={user.uid}
+          userName={user.displayName || user.email || "Anonymous"}
+          onClose={() => setShowReviewModal(false)}
+          onSuccess={() => {
+            setShowReviewModal(false);
+            alert("Your review has been published! Please refresh to see it.");
+          }}
+        />
+      )}
     </div>
   );
 }

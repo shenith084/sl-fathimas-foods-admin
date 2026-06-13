@@ -26,6 +26,7 @@ export default async function ProductsPage() {
     rating: p.rating || 4.9,
     reviews: p.reviews || 0,
     images: (p as any).images || undefined,
+    stock: p.stock_count ?? 0,
   }));
 
   return <ProductsClientComponent initialProducts={initialProducts} />;

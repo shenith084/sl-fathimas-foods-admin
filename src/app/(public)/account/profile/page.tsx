@@ -1,231 +1,196 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { onAuthStateChanged, updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
+import { onAuthStateChanged, updateProfile } from "firebase/auth";
 import { auth, db } from "@/lib/firebase/client";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { ChevronLeft, Save, Check } from "lucide-react";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 
 export default function ProfilePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [savingProfile, setSavingProfile] = useState(false);
-  const [savingPassword, setSavingPassword] = useState(false);
-  const [profileSaved, setProfileSaved] = useState(false);
-  const [passwordSaved, setPasswordSaved] = useState(false);
-  const [profileError, setProfileError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
-  const [displayName, setDisplayName] = useState("");
-  const [email, setEmail] = useState("");
+  const nameRef = useRef<HTMLInputElement>(null);
 
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+  });
+
+  // State to hold the saved data for the "Default Address" card
+  const [savedData, setSavedData] = useState({
+    address: "",
+    phone: "",
+  });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         router.push("/auth?redirect=/account/profile");
         return;
       }
-      setDisplayName(user.displayName || "");
-      setEmail(user.email || "");
+      
+      let fetchedPhone = "";
+      let fetchedAddress = "";
+
+      // Fetch user doc from Firestore
+      try {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          fetchedPhone = data.phone || "";
+          fetchedAddress = data.address || "";
+        }
+      } catch (err) {
+        console.error("Failed to load profile data:", err);
+      }
+
+      setForm({
+        name: user.displayName || "",
+        email: user.email || "",
+        phone: fetchedPhone,
+        address: fetchedAddress,
+      });
+
+      setSavedData({
+        address: fetchedAddress,
+        phone: fetchedPhone,
+      });
+
       setLoading(false);
     });
     return () => unsubscribe();
   }, [router]);
 
+  const update = (field: string, value: string) => setForm(f => ({ ...f, [field]: value }));
+
   async function handleProfileSave(e: React.FormEvent) {
     e.preventDefault();
-    if (!displayName.trim()) {
-      setProfileError("Name cannot be empty");
+    if (!form.name.trim()) {
+      setErrorMsg("Name cannot be empty");
       return;
     }
-    setSavingProfile(true);
-    setProfileError("");
+    setSaving(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+
     try {
       const user = auth.currentUser;
       if (user) {
-        await updateProfile(user, { displayName: displayName.trim() });
+        await updateProfile(user, { displayName: form.name.trim() });
         await setDoc(doc(db, "users", user.uid), {
-          displayName: displayName.trim(),
+          displayName: form.name.trim(),
+          phone: form.phone.trim(),
+          address: form.address.trim(),
           updated_at: serverTimestamp(),
         }, { merge: true });
-        setProfileSaved(true);
-        setTimeout(() => setProfileSaved(false), 2500);
+        
+        setSavedData({
+          address: form.address.trim(),
+          phone: form.phone.trim(),
+        });
+        
+        setSuccessMsg("Profile updated successfully!");
+        setTimeout(() => setSuccessMsg(""), 3000);
       }
     } catch {
-      setProfileError("Failed to update profile. Please try again.");
+      setErrorMsg("Failed to update profile. Please try again.");
     } finally {
-      setSavingProfile(false);
-    }
-  }
-
-  async function handlePasswordChange(e: React.FormEvent) {
-    e.preventDefault();
-    setPasswordError("");
-    if (newPassword.length < 6) {
-      setPasswordError("New password must be at least 6 characters.");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setPasswordError("Passwords do not match.");
-      return;
-    }
-    setSavingPassword(true);
-    try {
-      const user = auth.currentUser;
-      if (user && user.email) {
-        const credential = EmailAuthProvider.credential(user.email, currentPassword);
-        await reauthenticateWithCredential(user, credential);
-        await updatePassword(user, newPassword);
-        setPasswordSaved(true);
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-        setTimeout(() => setPasswordSaved(false), 2500);
-      }
-    } catch (err: any) {
-      if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
-        setPasswordError("Current password is incorrect.");
-      } else {
-        setPasswordError("Failed to change password. Please try again.");
-      }
-    } finally {
-      setSavingPassword(false);
+      setSaving(false);
     }
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <div className="w-8 h-8 border-2 border-[#D98C1F] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2]">
-      <div className="max-w-2xl mx-auto px-4 py-10">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-8">
-          <Link href="/account" className="text-[#888] hover:text-[#444] transition-colors">
-            <ChevronLeft className="w-5 h-5" />
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-[#222]">My Profile</h1>
-            <p className="text-sm text-[#888] mt-0.5">Update your name and password</p>
-          </div>
-        </div>
+    <div className="w-full">
+      <div className="mb-6">
+        <h1 className="text-2xl font-display font-bold text-[#222]">My Profile</h1>
+        <p className="text-sm text-[#555] mt-1">Manage your personal information and account details.</p>
+      </div>
 
-        {/* Profile Info */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-5">
-          <h2 className="font-semibold text-[#222] mb-5">Personal Information</h2>
-          <form onSubmit={handleProfileSave} className="space-y-4">
-            {profileError && (
-              <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl p-3 font-medium">
-                ⚠️ {profileError}
-              </div>
-            )}
-            <div>
-              <label className="block text-sm font-medium text-[#444] mb-1.5">Full Name</label>
+      {errorMsg && (
+        <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl p-4 mb-6 font-medium">
+          ⚠️ {errorMsg}
+        </div>
+      )}
+      
+      {successMsg && (
+        <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl p-4 mb-6 font-medium">
+          ✅ {successMsg}
+        </div>
+      )}
+
+      <div className="max-w-2xl">
+        {/* Profile Information Form */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+          <h2 className="font-semibold text-[#222] mb-6">Profile Information</h2>
+          <form onSubmit={handleProfileSave} className="space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
+              <label className="text-sm font-medium text-[#555] sm:w-32 flex-shrink-0">Full Name</label>
               <input
+                ref={nameRef}
                 type="text"
                 required
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#D98C1F] focus:ring-2 focus:ring-[#D98C1F]/20 transition-colors"
+                value={form.name}
+                onChange={(e) => update("name", e.target.value)}
+                className="w-full bg-transparent border-b border-gray-200 py-2 text-sm focus:outline-none focus:border-[#D98C1F] transition-colors"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-[#444] mb-1.5">Email Address</label>
+            
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
+              <label className="text-sm font-medium text-[#555] sm:w-32 flex-shrink-0">Email Address</label>
               <input
                 type="email"
-                value={email}
                 disabled
-                className="w-full border border-gray-100 bg-gray-50 rounded-xl px-4 py-3 text-sm text-[#aaa] cursor-not-allowed"
+                value={form.email}
+                className="w-full bg-transparent border-b border-gray-100 py-2 text-sm text-[#888] cursor-not-allowed"
               />
-              <p className="text-xs text-[#aaa] mt-1">Email cannot be changed here.</p>
             </div>
-            <button
-              type="submit"
-              disabled={savingProfile}
-              className="flex items-center gap-2 bg-[#D98C1F] hover:bg-[#B8740F] text-white font-semibold px-5 py-2.5 rounded-xl transition-colors disabled:opacity-50"
-            >
-              {savingProfile ? (
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : profileSaved ? (
-                <><Check className="w-4 h-4" /> Saved!</>
-              ) : (
-                <><Save className="w-4 h-4" /> Save Changes</>
-              )}
-            </button>
-          </form>
-        </div>
+            
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
+              <label className="text-sm font-medium text-[#555] sm:w-32 flex-shrink-0">Phone Number</label>
+              <input
+                type="tel"
+                value={form.phone}
+                onChange={(e) => update("phone", e.target.value)}
+                placeholder="+94 77 123 4567"
+                className="w-full bg-transparent border-b border-gray-200 py-2 text-sm focus:outline-none focus:border-[#D98C1F] transition-colors"
+              />
+            </div>
+            
+            <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-6">
+              <label className="text-sm font-medium text-[#555] sm:w-32 flex-shrink-0 mt-2">Address</label>
+              <textarea
+                value={form.address}
+                onChange={(e) => update("address", e.target.value)}
+                placeholder="No. 123, Main Street, Colombo 07, Sri Lanka"
+                rows={3}
+                className="w-full bg-transparent border-b border-gray-200 py-2 text-sm focus:outline-none focus:border-[#D98C1F] transition-colors resize-none"
+              />
+            </div>
 
-        {/* Change Password */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h2 className="font-semibold text-[#222] mb-5">Change Password</h2>
-          <form onSubmit={handlePasswordChange} className="space-y-4">
-            {passwordError && (
-              <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl p-3 font-medium">
-                ⚠️ {passwordError}
-              </div>
-            )}
-            {passwordSaved && (
-              <div className="bg-green-50 border border-green-200 text-green-700 text-xs rounded-xl p-3 font-medium">
-                ✅ Password changed successfully!
-              </div>
-            )}
-            <div>
-              <label className="block text-sm font-medium text-[#444] mb-1.5">Current Password</label>
-              <input
-                type="password"
-                required
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#D98C1F] focus:ring-2 focus:ring-[#D98C1F]/20 transition-colors"
-              />
+            <div className="pt-4">
+              <button
+                type="submit"
+                disabled={saving}
+                className="w-full bg-[#D98C1F] hover:bg-[#B8740F] text-white font-bold py-3.5 rounded-xl transition-colors disabled:opacity-50 text-sm tracking-wide"
+              >
+                {saving ? "SAVING..." : "UPDATE PROFILE"}
+              </button>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-[#444] mb-1.5">New Password</label>
-              <input
-                type="password"
-                required
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Min. 6 characters"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#D98C1F] focus:ring-2 focus:ring-[#D98C1F]/20 transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#444] mb-1.5">Confirm New Password</label>
-              <input
-                type="password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Re-enter new password"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#D98C1F] focus:ring-2 focus:ring-[#D98C1F]/20 transition-colors"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={savingPassword}
-              className="flex items-center gap-2 bg-[#1F1F1F] hover:bg-[#333] text-white font-semibold px-5 py-2.5 rounded-xl transition-colors disabled:opacity-50"
-            >
-              {savingPassword ? (
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : passwordSaved ? (
-                <><Check className="w-4 h-4" /> Updated!</>
-              ) : (
-                "Change Password"
-              )}
-            </button>
           </form>
         </div>
       </div>

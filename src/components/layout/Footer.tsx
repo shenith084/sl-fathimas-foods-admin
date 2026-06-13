@@ -9,7 +9,6 @@ const footerLinks = {
   "Quick Links": [
     { label: "Home", href: "/" },
     { label: "Shop", href: "/products" },
-    { label: "Categories", href: "/categories" },
     { label: "Gift Packs", href: "/gift-packs" },
     { label: "Custom Orders", href: "/custom-orders" },
     { label: "About Us", href: "/about" },
@@ -27,7 +26,7 @@ const footerLinks = {
 const socialLinks = [
   {
     label: "TikTok",
-    href: "https://www.tiktok.com/@sl.fathimas.products",
+    href: "https://www.tiktok.com/@sl.fathimas.products?_r=1&_t=ZS-9724WrpOIGF",
     icon: (
       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
         <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.07 8.07 0 004.77 1.54V6.78s-.51.03-.99-.09z"/>
@@ -78,16 +77,16 @@ export default function Footer() {
   const address = settings?.businessAddress || "Sri Lanka";
 
   return (
-    <footer className="bg-[#1F1F1F] text-white">
+    <footer className="bg-[#111111] text-white">
       {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Brand Column */}
           <div className="lg:col-span-1">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 mb-5 group">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-black overflow-hidden shadow-sm border border-white/10 group-hover:border-[#D98C1F]/50 transition-colors relative">
-                <Image src="/logo.png" alt="Fathima's Logo" fill sizes="48px" className="object-cover" />
+            <Link href="/" className="flex items-center gap-3 mb-4 group">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-black overflow-hidden shadow-sm border border-white/10 group-hover:border-[#D98C1F]/50 transition-colors relative">
+                <Image src="/logo.png" alt="Fathima's Logo" fill sizes="40px" className="object-cover" />
               </div>
               <div className="leading-tight">
                 <div className="font-display font-bold text-white text-base tracking-wide group-hover:text-[#D98C1F] transition-colors">
@@ -99,7 +98,7 @@ export default function Footer() {
               </div>
             </Link>
 
-            <p className="text-gray-400 text-sm leading-relaxed mb-6">
+            <p className="text-gray-400 text-xs md:text-sm leading-relaxed mb-4">
               Homemade food products made with love, natural ingredients, and traditional recipes.
               Delivering happiness to your doorstep.
             </p>
@@ -113,7 +112,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={s.label}
-                  className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center text-gray-400 hover:bg-[#D98C1F] hover:text-white transition-all duration-200"
+                  className="w-8 h-8 rounded-full border border-gray-600 flex items-center justify-center text-gray-400 hover:border-[#D98C1F] hover:text-[#D98C1F] transition-all duration-200"
                 >
                   {s.icon}
                 </a>
@@ -124,10 +123,10 @@ export default function Footer() {
           {/* Link Columns */}
           {Object.entries(footerLinks).map(([title, links]) => (
             <div key={title}>
-              <h3 className="font-display font-semibold text-white text-sm uppercase tracking-wider mb-5">
+              <h3 className="font-display font-semibold text-white text-sm uppercase tracking-wider mb-4">
                 {title}
               </h3>
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 {links.map((link) => (
                   <li key={link.label}>
                     <Link
@@ -144,10 +143,10 @@ export default function Footer() {
 
           {/* Contact Column */}
           <div>
-            <h3 className="font-display font-semibold text-white text-sm uppercase tracking-wider mb-5">
+            <h3 className="font-display font-semibold text-white text-sm uppercase tracking-wider mb-4">
               Contact Us
             </h3>
-            <ul className="space-y-3 text-sm text-gray-400">
+            <ul className="space-y-2 text-sm text-gray-400">
               <li className="flex items-start gap-2">
                 <span className="text-[#D98C1F] mt-0.5">📞</span>
                 <span>{whatsapp}</span>
@@ -163,7 +162,7 @@ export default function Footer() {
               <li className="flex items-start gap-2">
                 <span className="text-[#D98C1F] mt-0.5">🎵</span>
                 <a
-                  href="https://www.tiktok.com/@sl.fathimas.products"
+                  href="https://www.tiktok.com/@sl.fathimas.products?_r=1&_t=ZS-9724WrpOIGF"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-[#D98C1F] transition-colors"
@@ -172,21 +171,24 @@ export default function Footer() {
                 </a>
               </li>
             </ul>
+          </div>
 
-            {/* Newsletter */}
-            <div className="mt-6">
-              <p className="text-gray-400 text-sm mb-3">
-                Subscribe to get updates on new products and offers.
-              </p>
-              <NewsletterForm />
-            </div>
+          {/* Newsletter Column */}
+          <div className="lg:col-span-1">
+            <h3 className="font-display font-semibold text-white text-sm uppercase tracking-wider mb-4">
+              Newsletter
+            </h3>
+            <p className="text-gray-400 text-xs md:text-sm mb-3 leading-relaxed">
+              Subscribe to get updates on new products and offers.
+            </p>
+            <NewsletterForm />
           </div>
         </div>
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+      <div className="bg-[#2C4631]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
           <p className="text-center text-gray-500 text-xs">
             © 2025 SL Fathima&apos;s Foods. All Rights Reserved. | Crafted with{" "}
             <span className="text-[#D98C1F]">❤</span> in Sri Lanka
