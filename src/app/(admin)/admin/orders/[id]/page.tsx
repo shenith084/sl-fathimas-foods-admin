@@ -30,6 +30,7 @@ export default function OrderDetailPage() {
   const [note, setNote] = useState("");
   const [newStatus, setNewStatus] = useState("");
   const [newTotal, setNewTotal] = useState("");
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
 
   useEffect(() => {
     fetch(`/api/v1/orders/${id}`)
@@ -38,7 +39,7 @@ export default function OrderDetailPage() {
         if (data.success) {
           setOrder(data.data);
           setNewStatus(data.data.status);
-          setNewTotal(data.data.total?.toString() || "0");
+          setNewTotal("0");
           
           if (data.data.hasUnreadReceipt) {
             fetch(`/api/v1/orders/${id}`, {
@@ -57,7 +58,7 @@ export default function OrderDetailPage() {
     setUpdating(true);
     try {
       const payload: any = { status: newStatus, note };
-      if (isCustomOrder && newTotal) {
+      if (isCustomOrder && newTotal !== "0" && newTotal !== "") {
         payload.total = Number(newTotal);
       }
 
@@ -74,9 +75,7 @@ export default function OrderDetailPage() {
       }
 
       setOrder((prev) => prev ? { ...prev, status: newStatus, total: payload.total ?? prev.total, subtotal: payload.total ?? prev.subtotal } : prev);
-      if (payload.total !== undefined) {
-        setNewTotal(payload.total.toString());
-      }
+      setNewTotal("0");
       setNote("");
     } finally {
       setUpdating(false);
@@ -164,7 +163,7 @@ export default function OrderDetailPage() {
           )}
           <button
             onClick={handleStatusUpdate}
-            disabled={updating || (newStatus === order.status && note === "" && (!isCustomOrder || newTotal === order.total?.toString()))}
+            disabled={updating || (newStatus === order.status && note === "" && (!isCustomOrder || newTotal === "0" || newTotal === ""))}
             className="px-5 py-2.5 bg-[#D98C1F] hover:bg-[#B8740F] text-white text-sm font-semibold rounded-xl transition-colors disabled:bg-gray-200 disabled:text-gray-400"
           >
             {updating ? "Saving..." : "Update"}
@@ -257,14 +256,12 @@ export default function OrderDetailPage() {
               {order.paymentDetails?.receiptUrl && (
                 <div className="pt-3 mt-3 border-t border-gray-100">
                   <span className="block text-[#888] mb-2">Bank Receipt</span>
-                  <a 
-                    href={order.paymentDetails.receiptUrl.endsWith('.pdf') ? order.paymentDetails.receiptUrl.replace('.pdf', '.png') : order.paymentDetails.receiptUrl} 
-                    target="_blank" 
-                    rel="noreferrer"
+                  <button 
+                    onClick={() => setIsReceiptModalOpen(true)}
                     className="inline-flex items-center justify-center w-full px-4 py-2 bg-[#F4EFE6] hover:bg-[#E8DFCC] text-[#2C4631] text-sm font-semibold rounded-xl transition-colors"
                   >
                     View Payment Receipt
-                  </a>
+                  </button>
                 </div>
               )}
             </div>
@@ -276,6 +273,27 @@ export default function OrderDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Receipt Modal */}
+      {isReceiptModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={() => setIsReceiptModalOpen(false)}>
+          <div className="relative bg-white rounded-2xl overflow-hidden max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center p-4 border-b border-gray-100">
+              <h3 className="font-semibold text-[#222]">Payment Receipt</h3>
+              <button onClick={() => setIsReceiptModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="p-4 overflow-auto flex justify-center bg-gray-50">
+              <img 
+                src={order.paymentDetails?.receiptUrl?.endsWith('.pdf') ? order.paymentDetails.receiptUrl.replace('.pdf', '.png') : order.paymentDetails?.receiptUrl} 
+                alt="Payment Receipt" 
+                className="max-w-full h-auto max-h-[70vh] object-contain rounded"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

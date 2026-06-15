@@ -21,6 +21,8 @@ export interface AdminProduct {
   images?: string[];
   seoTitle?: string;
   seoDescription?: string;
+  sku?: string;
+  stock?: number;
   deleted_at?: string | null;
   created_at?: string | null;
   updated_at?: string | null;

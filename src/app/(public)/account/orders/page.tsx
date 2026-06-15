@@ -14,7 +14,7 @@ interface Order {
   subtotal: number;
   deliveryCharge: number;
   status: string;
-  paymentDetails: { method: string };
+  paymentDetails: { method: string; status?: string; receiptUrl?: string };
   shippingDetails: { firstName: string; lastName: string; address: string; city: string; district: string };
   items: { name: string; qty: number; price: number; emoji: string; vacuum?: boolean; description?: string }[];
   status_history?: { status: string; timestamp: string; note?: string }[];

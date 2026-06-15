@@ -23,6 +23,13 @@ export interface Product {
   reviews: number;
   customizable: boolean;
   images?: string[];
+  stock?: number;
+  originalPrice?: number;
+  benefits?: string[];
+  isPopular?: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
+  sku?: string;
 }
 
 export const categories: Category[] = [
