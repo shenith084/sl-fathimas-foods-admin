@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SL Fathima's Foods — E-Commerce Platform
 
-## Getting Started
+A premium, highly-optimized Next.js e-commerce application built for SL Fathima's Foods to manage homemade Sri Lankan food products, custom orders, and island-wide delivery.
 
-First, run the development server:
+## 🚀 Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Framework:** Next.js 15+ (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS & Lucide Icons
+- **Database & Auth:** Firebase (Firestore NoSQL & Firebase Authentication)
+- **Media Management:** Cloudinary CDN
+- **Mailing:** Resend API
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ✨ Key Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### For Customers
+- **Blazing Fast Browsing:** 100% statically generated product pages (SSG) for instant load times.
+- **Secure Authentication:** Seamless email/password and Google login via Firebase.
+- **Advanced Cart System:** Real-time cart updates, dynamic free-delivery thresholds, and visual progress bars.
+- **Custom Order Builder:** Interactive form to request personalized event catering or gift hampers.
+- **Customer Dashboard:** Real-time order tracking, receipt uploading, and admin-message viewing.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### For Administrators
+- **Secure Admin Panel:** Role-based access control protecting the `/admin` routes.
+- **Order Management:** Interactive Kanban-style or list-based order processing (Pending ➔ Processing ➔ Dispatched ➔ Delivered).
+- **Dynamic Quoting:** Ability to assign custom prices to unquoted Custom Orders.
+- **Receipt Verification:** In-dashboard modal to view and verify customer-uploaded bank transfer receipts.
+- **Dynamic Settings:** Change bank account details and delivery fees without touching the code.
 
-## Learn More
+## 🛠️ Local Development
 
-To learn more about Next.js, take a look at the following resources:
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/your-username/sl-fathimas-foods.git
+   cd sl-fathimas-foods
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **Environment Variables:**
+   Create a `.env.local` file in the root directory and add your Firebase, Cloudinary, and Resend credentials (refer to `.env.example` if available).
 
-## Deploy on Vercel
+4. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📦 Deployment (Vercel)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This application is architected for Vercel's Edge Network.
+1. Push your code to a GitHub repository.
+2. Import the repository into your Vercel Dashboard.
+3. Copy all variables from your `.env.local` into the Vercel Environment Variables settings.
+4. Click **Deploy**. Vercel will automatically run `npm run build` and generate all static pages.
+
+## 🔒 Security Architecture
+- **Firestore Rules:** Read/Write access is strictly guarded. Only the Admin SDK (server-side) can mutate products and system settings.
+- **Server Actions & API Routes:** All sensitive operations (order quoting, user role management) run securely on the Node backend.
+- **Content Security Policy:** Implemented to prevent XSS and inline-script injection.
+
+---
+*Built with ❤️ for SL Fathima's Foods.*
