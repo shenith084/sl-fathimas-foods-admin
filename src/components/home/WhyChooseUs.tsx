@@ -31,7 +31,7 @@ export default function WhyChooseUs() {
           {features.map((feat, i) => (
             <div
               key={feat.title}
-              className="flex gap-4 items-start bg-white rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow duration-300 group"
+              className="flex gap-4 items-start bg-white rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow duration-300 group"
               style={{ animationDelay: `${i * 0.1}s` }}
             >
               {/* Icon circle */}

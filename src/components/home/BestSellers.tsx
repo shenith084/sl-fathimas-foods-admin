@@ -108,7 +108,7 @@ function ProductCard({ product }: { product: Product }) {
   };
 
   return (
-    <div className="product-card flex-shrink-0 w-[200px] sm:w-[220px] bg-white rounded-2xl overflow-hidden shadow-card group cursor-pointer">
+    <div className="product-card flex-shrink-0 w-[200px] sm:w-[220px] bg-white rounded-lg overflow-hidden shadow-card group cursor-pointer">
       {/* Image area */}
       <div className="relative bg-gradient-to-br from-[#F4EFE6] to-[#FAF7F2] h-44 flex items-center justify-center overflow-hidden">
         {product.badge && (

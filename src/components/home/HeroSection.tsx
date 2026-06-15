@@ -66,7 +66,7 @@ export default function HeroSection() {
               ].map((feat) => (
                 <div
                   key={feat.label}
-                  className="flex flex-col items-center gap-1 bg-white/70 backdrop-blur-sm rounded-2xl p-3 border border-white shadow-sm"
+                  className="flex flex-col items-center gap-1 bg-white/70 backdrop-blur-sm rounded-lg p-3 border border-white shadow-sm"
                 >
                   <span className="text-2xl">{feat.icon}</span>
                   <span className="font-display font-bold text-[#222] text-xs leading-tight text-center">

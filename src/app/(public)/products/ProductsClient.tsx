@@ -479,7 +479,7 @@ function ProductsContent({ initialProducts }: { initialProducts: any[] }) {
                     <div
                       key={product.id}
                       id={`product-card-${product.id}`}
-                      className="product-card bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 group flex flex-col justify-between transition-shadow hover:shadow-md"
+                      className="product-card bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 group flex flex-col justify-between transition-shadow hover:shadow-md"
                     >
                       <Link href={`/products/${product.slug}`} className="block">
                         {/* Image area */}
