@@ -6,8 +6,14 @@ export async function GET() {
   try {
     const products = await getProducts();
     return NextResponse.json({ success: true, data: products });
-  } catch (err) {
-    return NextResponse.json({ success: false, message: "Failed to fetch products" }, { status: 500 });
+  } catch (err: any) {
+    console.error("GET /api/v1/products error:", err);
+    return NextResponse.json({ 
+      success: false, 
+      message: "Failed to fetch products", 
+      error: err?.message || String(err),
+      stack: err?.stack
+    }, { status: 500 });
   }
 }
 
