@@ -9,12 +9,12 @@ function getAdminApp(): App {
     return getApps()[0];
   }
 
-  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "sl-fathimas-foods";
-  const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "sl-fathima-s-foods.firebasestorage.app";
+  const projectId = (process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "sl-fathimas-foods").trim();
+  const storageBucket = (process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "sl-fathima-s-foods.firebasestorage.app").trim();
 
-  const adminSdkKey = process.env.FIREBASE_ADMIN_SDK_KEY;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY;
-  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const adminSdkKey = process.env.FIREBASE_ADMIN_SDK_KEY?.trim();
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.trim();
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL?.trim();
 
   let credential;
 
