@@ -14,6 +14,8 @@ function getAdminApp(): App {
   const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "sl-fathimas-foods";
 
   const adminSdkKey = process.env.FIREBASE_ADMIN_SDK_KEY;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
 
   if (adminSdkKey) {
     try {
@@ -29,6 +31,23 @@ function getAdminApp(): App {
       console.log("Firebase Admin SDK successfully initialized with Service Account Key.");
     } catch (error) {
       console.error("CRITICAL ERROR: Failed to parse FIREBASE_ADMIN_SDK_KEY:", error);
+      adminApp = initializeApp({ projectId });
+    }
+  } else if (privateKey && clientEmail) {
+    try {
+      const cleanedPrivateKey = privateKey.replace(/^['"]|['"]$/g, '').replace(/\\n/g, '\n');
+      adminApp = initializeApp({
+        credential: cert({
+          projectId,
+          clientEmail,
+          privateKey: cleanedPrivateKey,
+        }),
+        projectId,
+        storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "sl-fathima-s-foods.firebasestorage.app"
+      });
+      console.log("Firebase Admin SDK successfully initialized with Client Email and Private Key.");
+    } catch (error) {
+      console.error("CRITICAL ERROR: Failed to initialize with Client Email and Private Key:", error);
       adminApp = initializeApp({ projectId });
     }
   } else {
