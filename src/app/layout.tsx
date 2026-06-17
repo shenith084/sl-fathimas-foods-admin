@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Inter, Playfair_Display, Dancing_Script } from "next/font/google";
 import "./globals.css";
-import MetaPixel from "@/components/analytics/MetaPixel";
-import TikTokPixel from "@/components/analytics/TikTokPixel";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -101,13 +99,7 @@ export default function RootLayout({
 
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable} ${script.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
-      <body className="font-sans antialiased bg-cream text-charcoal">
-        <Suspense fallback={null}>
-          <MetaPixel />
-        </Suspense>
-        <Suspense fallback={null}>
-          <TikTokPixel />
-        </Suspense>
+      <body className="font-sans antialiased bg-[#FAFAFA] text-[#222]">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

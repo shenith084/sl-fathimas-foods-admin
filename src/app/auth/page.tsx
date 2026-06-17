@@ -17,12 +17,7 @@ import { createOrUpdateUserDoc, isAdminUser } from "@/lib/services/userService";
 type Mode = "login" | "register" | "forgot";
 
 async function redirectByRole(user: any, fallbackRedirect: string | null, router: ReturnType<typeof useRouter>) {
-  const isAdmin = await isAdminUser(user.uid, user.email);
-  if (isAdmin) {
-    router.push("/admin/dashboard");
-  } else {
-    router.push(fallbackRedirect || "/products");
-  }
+  router.push("/admin/dashboard");
 }
 
 function AuthForm() {
@@ -88,12 +83,7 @@ function AuthForm() {
       await updateProfile(userCred.user, { displayName: form.name });
       // Create user document + auto-assign role based on email
       const role = await createOrUpdateUserDoc(userCred.user.uid, form.email, form.name);
-      // Route by assigned role
-      if (role === "owner" || role === "staff") {
-        router.push("/admin/dashboard");
-      } else {
-        router.push(redirect || "/products");
-      }
+      router.push("/admin/dashboard");
     } catch (err: any) {
       console.error("Registration error:", err);
       let msg = "Failed to create account. Please try again.";
@@ -158,21 +148,7 @@ function AuthForm() {
             </div>
           )}
 
-          {/* Mode tabs */}
-          {mode !== "forgot" && (
-            <div className="flex bg-[#FAF7F2] rounded-2xl p-1 mb-6">
-              {(["login", "register"] as const).map((m) => (
-                <button
-                  key={m}
-                  disabled={loading}
-                  onClick={() => { setMode(m); setError(""); }}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${mode === m ? "bg-white text-[#222] shadow-sm" : "text-[#999] hover:text-[#555]"}`}
-                >
-                  {m === "login" ? "Sign In" : "Create Account"}
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Mode tabs removed for security. Admins can only login. */}
 
           {/* Forgot Password */}
           {mode === "forgot" && (
@@ -272,88 +248,10 @@ function AuthForm() {
               >
                 {loading ? "Signing In..." : <><span className="select-none">Sign In</span> <ArrowRight className="w-4 h-4" /></>}
               </button>
-              <p className="text-center text-sm text-[#666]">
-                Don&apos;t have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => { setMode("register"); setError(""); }}
-                  className="text-[#D98C1F] font-semibold hover:underline bg-transparent border-none p-0 cursor-pointer"
-                >
-                  Create one
-                </button>
-              </p>
             </form>
           )}
 
-          {/* Register */}
-          {mode === "register" && (
-            <form onSubmit={handleRegister} className="space-y-4">
-              <div>
-                <h2 className="font-display font-bold text-[#222] text-xl mb-1">Create Account</h2>
-                <p className="text-[#666] text-sm mb-4">Join us for faster checkout and order tracking.</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#444] mb-1.5">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Your full name"
-                  value={form.name}
-                  onChange={(e) => update("name", e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#D98C1F] focus:ring-2 focus:ring-[#D98C1F]/20 transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#444] mb-1.5">Email Address</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="your@email.com"
-                  value={form.email}
-                  onChange={(e) => update("email", e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#D98C1F] focus:ring-2 focus:ring-[#D98C1F]/20 transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#444] mb-1.5">Password</label>
-                <div className="relative">
-                  <input
-                    type={showPass ? "text" : "password"}
-                    required
-                    placeholder="Min. 6 characters"
-                    value={form.password}
-                    onChange={(e) => update("password", e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 pr-10 text-sm focus:outline-none focus:border-[#D98C1F] focus:ring-2 focus:ring-[#D98C1F]/20 transition-colors"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPass(!showPass)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#999]"
-                  >
-                    {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-              <button
-                type="submit"
-                id="auth-register-btn"
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-[#D98C1F] hover:bg-[#B8740F] text-white font-bold py-3.5 rounded-xl transition-all duration-200 shadow-md disabled:bg-gray-300"
-              >
-                {loading ? "Creating Account..." : <><span className="select-none">Create Account</span> <ArrowRight className="w-4 h-4" /></>}
-              </button>
-              <p className="text-center text-sm text-[#666]">
-                Already have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => { setMode("login"); setError(""); }}
-                  className="text-[#D98C1F] font-semibold hover:underline bg-transparent border-none p-0 cursor-pointer"
-                >
-                  Sign in
-                </button>
-              </p>
-            </form>
-          )}
+          {/* Register block removed for admin security */}
         </div>
 
         <p className="text-center text-xs text-[#999] mt-5">
