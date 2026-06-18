@@ -48,6 +48,26 @@ export default function AdminMessagesPage() {
     markAsRead(msg.id, msg.read);
   };
 
+  const handleDeleteMessage = async () => {
+    if (!selectedMessage || !confirm("Are you sure you want to delete this message?")) return;
+    
+    try {
+      const res = await fetch(`/api/v1/messages?id=${selectedMessage.id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMessages(messages.filter(m => m.id !== selectedMessage.id));
+        setSelectedMessage(null);
+      } else {
+        alert("Failed to delete message");
+      }
+    } catch (error) {
+      console.error("Error deleting message:", error);
+      alert("Error deleting message");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -168,13 +188,27 @@ export default function AdminMessagesPage() {
                 </div>
               </div>
 
-              <div className="mt-8 flex justify-end">
-                <button 
-                  onClick={() => setSelectedMessage(null)}
-                  className="bg-[#2C4631] text-white px-8 py-3 rounded-xl font-bold hover:bg-[#1E3322] transition-colors flex items-center gap-2"
+              <div className="mt-8 flex justify-between items-center">
+                <button
+                  onClick={handleDeleteMessage}
+                  className="text-red-600 hover:text-red-700 font-bold px-4 py-2 transition-colors"
                 >
-                  <CheckCircle2 className="w-5 h-5" /> Done
+                  Delete Message
                 </button>
+                <div className="flex gap-4">
+                  <a
+                    href={`mailto:${selectedMessage.email}?subject=Re: ${selectedMessage.subject || "Your Message"}`}
+                    className="bg-[#D98C1F] text-white px-8 py-3 rounded-xl font-bold hover:bg-[#B8740F] transition-colors flex items-center gap-2"
+                  >
+                    <Mail className="w-5 h-5" /> Reply
+                  </a>
+                  <button 
+                    onClick={() => setSelectedMessage(null)}
+                    className="bg-[#2C4631] text-white px-8 py-3 rounded-xl font-bold hover:bg-[#1E3322] transition-colors flex items-center gap-2"
+                  >
+                    <CheckCircle2 className="w-5 h-5" /> Done
+                  </button>
+                </div>
               </div>
             </div>
           </div>

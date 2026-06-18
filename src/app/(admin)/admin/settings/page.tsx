@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Save, RefreshCw, Settings as SettingsIcon } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
+import { auth } from "@/lib/firebase/client";
 
 interface BusinessSettings {
   deliveryCharge?: number;
@@ -18,6 +19,9 @@ interface BusinessSettings {
   bank2Branch?: string;
   businessEmail?: string;
   businessAddress?: string;
+  giftPackMinItems?: number;
+  giftPackRibbonPrice?: number;
+  giftPackGreetingCardPrice?: number;
 }
 
 export default function AdminSettingsPage() {
@@ -40,11 +44,24 @@ export default function AdminSettingsPage() {
   async function handleSave() {
     setSaving(true);
     try {
-      await fetch("/api/v1/settings", {
+      const user = auth.currentUser;
+      const token = user ? await user.getIdToken() : "";
+      
+      const res = await fetch("/api/v1/settings", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          ...(token && { "Authorization": `Bearer ${token}` })
+        },
         body: JSON.stringify(settings),
       });
+      
+      const data = await res.json();
+      if (!data.success) {
+        alert(data.message || data.error || "Failed to save settings");
+        return;
+      }
+      
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } finally {
@@ -99,10 +116,12 @@ export default function AdminSettingsPage() {
           </h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-[#555] mb-1.5">
+              <label htmlFor="deliveryCharge" className="block text-xs font-semibold text-[#555] mb-1.5">
                 Standard Delivery Charge (LKR)
               </label>
               <input
+                id="deliveryCharge"
+                name="deliveryCharge"
                 type="number" min="0"
                 value={settings.deliveryCharge || ""}
                 onChange={(e) => update("deliveryCharge", Number(e.target.value))}
@@ -118,8 +137,10 @@ export default function AdminSettingsPage() {
           <h3 className="font-semibold text-[#222] mb-5">📱 Contact Information</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-[#555] mb-1.5">WhatsApp Number</label>
+              <label htmlFor="whatsappNumber" className="block text-xs font-semibold text-[#555] mb-1.5">WhatsApp Number</label>
               <input
+                id="whatsappNumber"
+                name="whatsappNumber"
                 value={settings.whatsappNumber || ""}
                 onChange={(e) => update("whatsappNumber", e.target.value)}
                 placeholder="+94771234567"
@@ -127,8 +148,10 @@ export default function AdminSettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#555] mb-1.5">Business Email</label>
+              <label htmlFor="businessEmail" className="block text-xs font-semibold text-[#555] mb-1.5">Business Email</label>
               <input
+                id="businessEmail"
+                name="businessEmail"
                 type="email"
                 value={settings.businessEmail || ""}
                 onChange={(e) => update("businessEmail", e.target.value)}
@@ -137,8 +160,10 @@ export default function AdminSettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#555] mb-1.5">Business Address</label>
+              <label htmlFor="businessAddress" className="block text-xs font-semibold text-[#555] mb-1.5">Business Address</label>
               <input
+                id="businessAddress"
+                name="businessAddress"
                 value={settings.businessAddress || ""}
                 onChange={(e) => update("businessAddress", e.target.value)}
                 placeholder="Colombo, Sri Lanka"
@@ -162,8 +187,10 @@ export default function AdminSettingsPage() {
                 { label: "Branch", field: "bank1Branch", placeholder: "Colombo Branch" },
               ].map((f) => (
                 <div key={f.field}>
-                  <label className="block text-xs font-semibold text-[#555] mb-1.5">{f.label}</label>
+                  <label htmlFor={f.field} className="block text-xs font-semibold text-[#555] mb-1.5">{f.label}</label>
                   <input
+                    id={f.field}
+                    name={f.field}
                     value={(settings as Record<string, string>)[f.field] || ""}
                     onChange={(e) => update(f.field, e.target.value)}
                     placeholder={f.placeholder}
@@ -184,8 +211,10 @@ export default function AdminSettingsPage() {
                 { label: "Branch", field: "bank2Branch", placeholder: "Colombo Branch" },
               ].map((f) => (
                 <div key={f.field}>
-                  <label className="block text-xs font-semibold text-[#555] mb-1.5">{f.label}</label>
+                  <label htmlFor={f.field} className="block text-xs font-semibold text-[#555] mb-1.5">{f.label}</label>
                   <input
+                    id={f.field}
+                    name={f.field}
                     value={(settings as Record<string, string>)[f.field] || ""}
                     onChange={(e) => update(f.field, e.target.value)}
                     placeholder={f.placeholder}
@@ -193,6 +222,58 @@ export default function AdminSettingsPage() {
                   />
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Gift Pack Options */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <h3 className="font-semibold text-[#222] mb-5 flex items-center gap-2">
+            🎁 Gift Pack Options
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="giftPackMinItems" className="block text-xs font-semibold text-[#555] mb-1.5">
+                Minimum Items Required
+              </label>
+              <input
+                id="giftPackMinItems"
+                name="giftPackMinItems"
+                type="number" min="1"
+                value={settings.giftPackMinItems ?? ""}
+                onChange={(e) => update("giftPackMinItems", Number(e.target.value))}
+                placeholder="3"
+                className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#D98C1F] focus:ring-2 focus:ring-[#D98C1F]/20"
+              />
+              <p className="text-[11px] text-[#999] mt-1">Minimum number of items a customer must add to create a gift pack.</p>
+            </div>
+            <div>
+              <label htmlFor="giftPackRibbonPrice" className="block text-xs font-semibold text-[#555] mb-1.5">
+                Decorative Ribbon Price (LKR)
+              </label>
+              <input
+                id="giftPackRibbonPrice"
+                name="giftPackRibbonPrice"
+                type="number" min="0"
+                value={settings.giftPackRibbonPrice ?? ""}
+                onChange={(e) => update("giftPackRibbonPrice", Number(e.target.value))}
+                placeholder="150"
+                className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#D98C1F] focus:ring-2 focus:ring-[#D98C1F]/20"
+              />
+            </div>
+            <div>
+              <label htmlFor="giftPackGreetingCardPrice" className="block text-xs font-semibold text-[#555] mb-1.5">
+                Greeting Card Price (LKR)
+              </label>
+              <input
+                id="giftPackGreetingCardPrice"
+                name="giftPackGreetingCardPrice"
+                type="number" min="0"
+                value={settings.giftPackGreetingCardPrice ?? ""}
+                onChange={(e) => update("giftPackGreetingCardPrice", Number(e.target.value))}
+                placeholder="500"
+                className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#D98C1F] focus:ring-2 focus:ring-[#D98C1F]/20"
+              />
             </div>
           </div>
         </div>

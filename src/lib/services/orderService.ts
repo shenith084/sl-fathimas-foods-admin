@@ -76,7 +76,8 @@ export async function updateOrderStatus(
   id: string,
   status: string,
   note?: string,
-  total?: number
+  total?: number,
+  markUnread?: boolean
 ): Promise<void> {
   const historyEntry = {
     status,
@@ -95,7 +96,7 @@ export async function updateOrderStatus(
     updateData.subtotal = total;
   }
 
-  if (note) {
+  if (note || markUnread) {
     updateData.hasUnreadMessage = true;
   }
 

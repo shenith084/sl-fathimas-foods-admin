@@ -17,12 +17,15 @@ const DEFAULTS = {
   bank2Branch: "Narammala Branch",
   businessEmail: "slfathimasfoods@gmail.com",
   businessAddress: "Colombo, Sri Lanka",
+  giftPackMinItems: 3,
+  giftPackRibbonPrice: 150,
+  giftPackGreetingCardPrice: 500,
 };
 
 export async function GET() {
   try {
     const doc = await adminDb.collection("settings").doc("business").get();
-    const data = doc.exists ? doc.data() : DEFAULTS;
+    const data = doc.exists ? { ...DEFAULTS, ...doc.data() } : DEFAULTS;
     return NextResponse.json({ success: true, data });
   } catch {
     return NextResponse.json({ success: true, data: DEFAULTS });
@@ -53,7 +56,8 @@ export async function PATCH(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true, message: "Settings saved" });
-  } catch {
-    return NextResponse.json({ success: false, message: "Failed to save settings" }, { status: 500 });
+  } catch (error) {
+    console.error("Error saving settings:", error);
+    return NextResponse.json({ success: false, message: "Failed to save settings", error: String(error) }, { status: 500 });
   }
 }

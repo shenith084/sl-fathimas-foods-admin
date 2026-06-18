@@ -80,3 +80,24 @@ export async function PATCH(request: Request) {
     );
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const url = new URL(request.url);
+    const id = url.searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: "Missing id" }, { status: 400 });
+    }
+
+    await adminDb.collection("contact_messages").doc(id).delete();
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error("Error deleting message:", error);
+    return NextResponse.json(
+      { success: false, error: error.message || "Failed to delete message" },
+      { status: 500 }
+    );
+  }
+}

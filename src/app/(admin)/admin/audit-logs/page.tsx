@@ -82,13 +82,13 @@ export default function AuditLogsPage() {
       <PageHeader title="Audit Logs" subtitle="All system actions recorded in chronological order" />
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mb-4 flex items-center gap-3 px-4 py-3">
-        <div className="flex items-center gap-2 border-r border-gray-100 pr-4">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mb-4 flex flex-col md:flex-row md:items-center gap-3 px-4 py-3">
+        <div className="flex items-center gap-2 border-b md:border-b-0 md:border-r border-gray-100 pb-3 md:pb-0 md:pr-4">
           <Filter className="w-4 h-4 text-[#aaa]" />
           <select 
             value={moduleFilter} 
             onChange={handleModuleChange}
-            className="text-sm text-[#444] outline-none bg-transparent cursor-pointer"
+            className="text-sm text-[#444] outline-none bg-transparent cursor-pointer w-full md:w-auto"
           >
             <option value="all">All Modules</option>
             <option value="products">Products</option>
@@ -100,12 +100,14 @@ export default function AuditLogsPage() {
           </select>
         </div>
 
-        <Search className="w-4 h-4 text-[#aaa] ml-2" />
-        <input
-          type="text" placeholder="Search by action, target ID, or Admin UID..."
-          value={search} onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 text-sm text-[#444] outline-none bg-transparent placeholder:text-[#bbb]"
-        />
+        <div className="flex items-center gap-2 flex-1">
+          <Search className="w-4 h-4 text-[#aaa]" />
+          <input
+            type="text" placeholder="Search by action, target ID, or Admin UID..."
+            value={search} onChange={(e) => setSearch(e.target.value)}
+            className="flex-1 text-sm text-[#444] outline-none bg-transparent placeholder:text-[#bbb] w-full"
+          />
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -138,42 +140,66 @@ export default function AuditLogsPage() {
                       className={`border-b border-gray-50 hover:bg-gray-50/60 cursor-pointer transition-colors ${expandedRowId === log.id ? 'bg-[#FAFAFA]' : ''}`}
                       onClick={() => toggleRow(log.id)}
                     >
-                      <td className="px-5 py-3.5 text-[#aaa]">
-                        {expandedRowId === log.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      <td className="px-5 py-4 text-[#aaa]">
+                        <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${expandedRowId === log.id ? 'bg-[#2C4631] text-white' : 'bg-gray-100 hover:bg-gray-200'}`}>
+                          {expandedRowId === log.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        </div>
                       </td>
-                      <td className="px-5 py-3.5 text-xs text-[#888] whitespace-nowrap">
-                        {log.timestamp ? new Date(log.timestamp).toLocaleString("en-LK") : "—"}
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        {log.timestamp ? (
+                          <div className="flex flex-col">
+                            <span className="text-xs font-bold text-[#444]">{new Date(log.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                            <span className="text-[11px] font-medium text-[#888]">{new Date(log.timestamp).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</span>
+                          </div>
+                        ) : (
+                          <span className="text-[#888]">—</span>
+                        )}
                       </td>
-                      <td className="px-5 py-3.5">
-                        <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full capitalize ${MODULE_COLORS[log.module] || "bg-gray-100 text-gray-600"}`}>
+                      <td className="px-5 py-4">
+                        <span className={`text-[11px] font-bold px-3 py-1 rounded-full capitalize border ${MODULE_COLORS[log.module] ? MODULE_COLORS[log.module] + ' border-[currentColor]/10' : "bg-gray-100 text-gray-600 border-gray-200"}`}>
                           {log.module}
                         </span>
                       </td>
-                      <td className="px-5 py-3.5">
-                        <span className="text-sm text-[#444] capitalize">{log.action.replace(/_/g, " ")}</span>
+                      <td className="px-5 py-4">
+                        <span className="text-sm font-bold text-[#222] capitalize">{log.action.replace(/_/g, " ")}</span>
                       </td>
-                      <td className="px-5 py-3.5">
-                        <span className="font-mono text-[11px] text-[#aaa]">{log.target_id?.substring(0, 12) || "—"}</span>
+                      <td className="px-5 py-4">
+                        {log.target_id ? (
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gray-50 border border-gray-200">
+                            <span className="font-mono text-[11px] font-bold text-[#555]">{log.target_id.substring(0, 12)}</span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-[#aaa] ml-2">—</span>
+                        )}
                       </td>
-                      <td className="px-5 py-3.5">
-                        <span className="font-mono text-[11px] text-[#aaa]">{log.admin_uid?.substring(0, 12) || "system"}</span>
+                      <td className="px-5 py-4">
+                        <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-[#FFF9F0] border border-[#F0E6D2]">
+                          <div className="w-4 h-4 rounded-full bg-[#D98C1F] text-white flex items-center justify-center text-[9px] font-bold shadow-sm">
+                            {(log.admin_uid || "S")[0].toUpperCase()}
+                          </div>
+                          <span className="font-mono text-[11px] font-bold text-[#D98C1F]">{log.admin_uid?.substring(0, 12) || "system"}</span>
+                        </div>
                       </td>
                     </tr>
                     
                     {/* Expanded Details Row */}
                     {expandedRowId === log.id && (
-                      <tr className="bg-[#FAFAFA] border-b border-gray-100">
-                        <td colSpan={6} className="px-10 py-5">
-                          <div className="grid grid-cols-2 gap-6">
-                            <div>
-                              <p className="text-xs font-semibold text-[#888] mb-2 uppercase tracking-wide">Old Value</p>
-                              <pre className="bg-white border border-gray-100 rounded-lg p-3 text-[10px] text-[#555] font-mono overflow-auto max-h-[300px] shadow-inner">
+                      <tr className="bg-blue-50/20 border-b border-gray-100">
+                        <td colSpan={6} className="px-5 sm:px-10 py-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                              <p className="text-xs font-bold text-[#666] mb-3 uppercase tracking-wide flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-red-400"></span> Old Value
+                              </p>
+                              <pre className="bg-[#F8F9FA] border border-gray-100 rounded-lg p-4 text-[12px] text-[#444] font-mono overflow-auto max-h-[350px]">
                                 {log.old_value ? JSON.stringify(log.old_value, null, 2) : "null"}
                               </pre>
                             </div>
-                            <div>
-                              <p className="text-xs font-semibold text-[#888] mb-2 uppercase tracking-wide">New Value</p>
-                              <pre className="bg-[#F8FCF8] border border-[#E2F0E2] rounded-lg p-3 text-[10px] text-[#2F6B2F] font-mono overflow-auto max-h-[300px] shadow-inner">
+                            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                              <p className="text-xs font-bold text-[#666] mb-3 uppercase tracking-wide flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-green-400"></span> New Value
+                              </p>
+                              <pre className="bg-[#F4FDF4] border border-[#E2F0E2] rounded-lg p-4 text-[12px] text-[#2F6B2F] font-mono overflow-auto max-h-[350px]">
                                 {log.new_value ? JSON.stringify(log.new_value, null, 2) : "null"}
                               </pre>
                             </div>

@@ -99,7 +99,14 @@ export default function AdminProductsPage() {
 
       {/* Filters Bar */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm flex items-center gap-3 px-4 py-2.5 flex-1">
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            const input = e.currentTarget.querySelector('input');
+            if (input) input.blur();
+          }}
+          className="bg-white rounded-xl border border-gray-100 shadow-sm flex items-center gap-3 px-4 py-2.5 flex-1"
+        >
           <Search className="w-4 h-4 text-[#aaa]" />
           <input
             type="text"
@@ -109,9 +116,9 @@ export default function AdminProductsPage() {
             className="flex-1 text-sm text-[#444] outline-none bg-transparent placeholder:text-[#bbb]"
           />
           {search && (
-            <button onClick={() => setSearch("")} className="text-xs text-[#aaa] hover:text-[#555]">Clear</button>
+            <button type="button" onClick={() => setSearch("")} className="text-xs text-[#aaa] hover:text-[#555]">Clear</button>
           )}
-        </div>
+        </form>
         
         <div className="flex gap-4">
           <select 

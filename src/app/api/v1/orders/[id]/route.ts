@@ -35,7 +35,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ success: true, message: "Payment receipt uploaded" });
     }
 
-    await updateOrderStatus(id, status, note, total);
+    const statusChanged = Boolean(oldOrder && oldOrder.status !== status);
+    await updateOrderStatus(id, status, note, total, statusChanged);
     await logAuditAction({
       adminUid: adminUid || "system",
       action: "update_order_status",

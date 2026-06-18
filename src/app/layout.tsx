@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Inter, Playfair_Display, Dancing_Script } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "react-hot-toast";
+import NextTopLoader from "nextjs-toploader";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -104,6 +106,8 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        <NextTopLoader color="#D98C1F" showSpinner={false} />
+        <Toaster position="bottom-right" />
         <main>{children}</main>
       </body>
     </html>
