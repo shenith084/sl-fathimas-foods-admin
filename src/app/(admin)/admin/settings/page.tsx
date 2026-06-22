@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { Save, RefreshCw, Settings as SettingsIcon } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
 import { auth } from "@/lib/firebase/client";
+import toast from "react-hot-toast";
+import { useConfirmStore } from "@/lib/store/confirmStore";
 
 interface BusinessSettings {
   deliveryCharge?: number;
@@ -30,6 +32,7 @@ export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [seeding, setSeeding] = useState(false);
   const [saved, setSaved] = useState(false);
+  const { showConfirm } = useConfirmStore();
 
   useEffect(() => {
     fetch("/api/v1/settings")
@@ -58,10 +61,11 @@ export default function AdminSettingsPage() {
       
       const data = await res.json();
       if (!data.success) {
-        alert(data.message || data.error || "Failed to save settings");
+        toast.error(data.message || data.error || "Failed to save settings");
         return;
       }
       
+      toast.success("Settings saved successfully!");
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } finally {
@@ -70,14 +74,15 @@ export default function AdminSettingsPage() {
   }
 
   async function handleSeedDatabase() {
-    if (!confirm("This will seed the database with default products, categories, and settings. Continue?")) return;
+    const confirmed = await showConfirm("Seed Database", "This will seed the database with default products, categories, and settings. Continue?");
+    if (!confirmed) return;
     setSeeding(true);
     try {
       const res = await fetch("/api/seed");
       const data = await res.json();
-      alert(data.message || "Database seeded successfully!");
+      toast.success(data.message || "Database seeded successfully!");
     } catch {
-      alert("Seed failed. Check console for errors.");
+      toast.error("Seed failed. Check console for errors.");
     } finally {
       setSeeding(false);
     }

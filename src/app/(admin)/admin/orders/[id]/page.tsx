@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronLeft, Check } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
 import StatusBadge from "@/components/admin/StatusBadge";
+import toast from "react-hot-toast";
 
 const ORDER_WORKFLOW = ["pending", "processing", "dispatched", "delivered"];
 
@@ -70,13 +71,14 @@ export default function OrderDetailPage() {
       const resData = await res.json();
       
       if (!resData.success) {
-        alert("Failed to update order");
+        toast.error("Failed to update order");
         return;
       }
 
       setOrder((prev) => prev ? { ...prev, status: newStatus, total: payload.total ?? prev.total, subtotal: payload.total ?? prev.subtotal } : prev);
       setNewTotal("0");
       setNote("");
+      toast.success("Order status updated!");
     } finally {
       setUpdating(false);
     }

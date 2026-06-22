@@ -5,6 +5,8 @@ import { User, Shield, Loader2, Edit2, CheckCircle2, Trash2 } from "lucide-react
 import { Role, getRoles, assignRoleToUser } from "@/lib/services/roleService";
 import { auth } from "@/lib/firebase/client";
 import CreateUserModal from "./CreateUserModal";
+import toast from "react-hot-toast";
+import { useConfirmStore } from "@/lib/store/confirmStore";
 
 // Temporary AppUser definition if not exported properly
 interface UserDoc {
@@ -27,6 +29,7 @@ export default function UsersClient() {
   const [isCallerSuperAdmin, setIsCallerSuperAdmin] = useState(false);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const { showConfirm } = useConfirmStore();
 
   useEffect(() => {
     fetchData();
@@ -76,14 +79,15 @@ export default function UsersClient() {
       await fetchData();
     } catch (error: any) {
       console.error("Error updating user role:", error);
-      alert(error.message || "Failed to update role. You must be a Super Admin.");
+      toast.error(error.message || "Failed to update role. You must be a Super Admin.");
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDeleteUser = async (uid: string) => {
-    if (!confirm("Are you sure you want to delete this user? This cannot be undone.")) return;
+    const confirmed = await showConfirm("Delete User", "Are you sure you want to delete this user? This cannot be undone.");
+    if (!confirmed) return;
     try {
       setLoading(true);
       const user = auth.currentUser;
@@ -98,7 +102,7 @@ export default function UsersClient() {
       await fetchData();
     } catch (err: any) {
       console.error("Failed to delete user:", err);
-      alert(err.message || "Failed to delete user.");
+      toast.error(err.message || "Failed to delete user.");
       setLoading(false);
     }
   };

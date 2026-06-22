@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Package, ShoppingCart, Users, BarChart2,
   Star, FileText, Settings, Shield, Box, ChevronRight, MessageSquare, X
@@ -11,17 +12,17 @@ import { AppPermissions } from "@/lib/services/roleService";
 // Each nav item declares which permission it requires (feature + action)
 // Items with no permissionKey are always visible (e.g. Dashboard)
 const navItems = [
-  { label: "Dashboard",    href: "/admin/dashboard",  icon: LayoutDashboard,  permissionKey: null },
-  { label: "Messages",     href: "/admin/messages",   icon: MessageSquare,     permissionKey: "messages" },
-  { label: "Products",     href: "/admin/products",   icon: Package,           permissionKey: "products" },
-  { label: "Orders",       href: "/admin/orders",     icon: ShoppingCart,      permissionKey: "orders" },
-  { label: "Stock",        href: "/admin/stock",      icon: Box,               permissionKey: "products" },
-  { label: "Reviews",      href: "/admin/reviews",    icon: Star,              permissionKey: "content" },
-  { label: "Reports",      href: "/admin/reports",    icon: BarChart2,         permissionKey: "settings" },
-  { label: "Audit Logs",   href: "/admin/audit-logs", icon: FileText,          permissionKey: "settings" },
-  { label: "System Users", href: "/admin/users",      icon: Users,             permissionKey: "users" },
-  { label: "Roles & Perms",href: "/admin/roles",      icon: Shield,            permissionKey: "roles" },
-  { label: "Settings",     href: "/admin/settings",   icon: Settings,          permissionKey: "settings" },
+  { label: "Dashboard",    href: "/admin/dashboard",  icon: LayoutDashboard,  permissionKey: null, notificationKey: null },
+  { label: "Messages",     href: "/admin/messages",   icon: MessageSquare,     permissionKey: "messages", notificationKey: "messages" },
+  { label: "Products",     href: "/admin/products",   icon: Package,           permissionKey: "products", notificationKey: null },
+  { label: "Orders",       href: "/admin/orders",     icon: ShoppingCart,      permissionKey: "orders", notificationKey: "orders" },
+  { label: "Stock",        href: "/admin/stock",      icon: Box,               permissionKey: "products", notificationKey: null },
+  { label: "Reviews",      href: "/admin/reviews",    icon: Star,              permissionKey: "content", notificationKey: "reviews" },
+  { label: "Reports",      href: "/admin/reports",    icon: BarChart2,         permissionKey: "settings", notificationKey: null },
+  { label: "Audit Logs",   href: "/admin/audit-logs", icon: FileText,          permissionKey: "settings", notificationKey: null },
+  { label: "System Users", href: "/admin/users",      icon: Users,             permissionKey: "users", notificationKey: null },
+  { label: "Roles & Perms",href: "/admin/roles",      icon: Shield,            permissionKey: "roles", notificationKey: null },
+  { label: "Settings",     href: "/admin/settings",   icon: Settings,          permissionKey: "settings", notificationKey: null },
 ];
 
 interface AdminSidebarProps {
@@ -33,6 +34,32 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ permissions, isAdminPrivileges, isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
+  const [notifications, setNotifications] = useState<Record<string, number>>({
+    orders: 0,
+    messages: 0,
+    reviews: 0
+  });
+
+  // Fetch notification counts periodically
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await fetch("/api/v1/notifications");
+        const json = await res.json();
+        if (json.success) {
+          setNotifications(json.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch notification counts", err);
+      }
+    };
+
+    fetchNotifications();
+    
+    // Poll every 30 seconds
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Decide if a nav item should be shown
   const canSee = (permissionKey: string | null): boolean => {
@@ -81,11 +108,13 @@ export default function AdminSidebar({ permissions, isAdminPrivileges, isOpen, o
           {visibleItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+            const badgeCount = item.notificationKey ? notifications[item.notificationKey] || 0 : 0;
+            
             return (
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative ${
                     isActive
                       ? "bg-gradient-to-r from-[#B8740F] to-[#D98C1F] text-white shadow-md"
                       : "text-[#888] hover:bg-white/5 hover:text-white"
@@ -93,7 +122,14 @@ export default function AdminSidebar({ permissions, isAdminPrivileges, isOpen, o
                 >
                   <Icon className={`w-4 h-4 flex-shrink-0 transition-colors ${isActive ? "text-white" : "text-[#666] group-hover:text-white"}`} />
                   <span className="flex-1">{item.label}</span>
-                  {isActive && <ChevronRight className="w-3 h-3 text-white/80" />}
+                  
+                  {badgeCount > 0 && (
+                    <div className="flex items-center justify-center bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 min-w-[1.25rem] h-5 rounded-full shadow-sm">
+                      {badgeCount > 99 ? '99+' : badgeCount}
+                    </div>
+                  )}
+                  
+                  {isActive && badgeCount === 0 && <ChevronRight className="w-3 h-3 text-white/80" />}
                 </Link>
               </li>
             );

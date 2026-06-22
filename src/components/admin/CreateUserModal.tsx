@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, Loader2 } from "lucide-react";
 import { Role } from "@/lib/services/roleService";
+import toast from "react-hot-toast";
 
 interface CreateUserModalProps {
   roles: Role[];
@@ -37,10 +38,10 @@ export default function CreateUserModal({ roles, onClose, onSuccess }: CreateUse
 
   const handleSave = async () => {
     if (!displayName.trim() || !email.trim() || !password.trim()) {
-      return alert("Name, Email, and Password are required");
+      return toast.error("Name, Email, and Password are required");
     }
     if (password.length < 6) {
-      return alert("Password must be at least 6 characters long");
+      return toast.error("Password must be at least 6 characters long");
     }
 
     try {
@@ -66,7 +67,7 @@ export default function CreateUserModal({ roles, onClose, onSuccess }: CreateUse
       onClose();
     } catch (err: any) {
       console.error("Error creating user:", err);
-      alert(err.message || "Failed to create user");
+      toast.error(err.message || "Failed to create user");
     } finally {
       setLoading(false);
     }

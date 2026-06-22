@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronLeft, Save } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
 import { categories } from "@/lib/mockData";
+import toast from "react-hot-toast";
 
 const EMOJIS = ["🍛", "🍚", "🌶️", "🥒", "🫙", "🐠", "🥩", "🎁", "✨", "🦐", "🦀", "🐟", "🌸", "🎀"];
 
@@ -29,7 +30,7 @@ export default function NewProductPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name || !form.category || !form.price) {
-      alert("Please fill in all required fields");
+      toast.error("Please fill in all required fields");
       return;
     }
     setLoading(true);
@@ -82,16 +83,17 @@ export default function NewProductPage() {
             });
           } catch (uploadError) {
             console.error("Image upload failed:", uploadError);
-            alert("Product created, but some images failed to upload.");
+            toast.error("Product created, but some images failed to upload.");
           }
         }
         
+        toast.success("Product created successfully!");
         router.push("/admin/products");
       } else {
-        alert("Failed to create product: " + data.message);
+        toast.error("Failed to create product: " + data.message);
       }
     } catch {
-      alert("Network error. Please try again.");
+      toast.error("Network error. Please try again.");
     } finally {
       setLoading(false);
     }

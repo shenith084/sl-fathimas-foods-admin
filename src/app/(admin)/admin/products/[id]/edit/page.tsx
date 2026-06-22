@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronLeft, Save } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
 import { categories } from "@/lib/mockData";
+import toast from "react-hot-toast";
 
 const EMOJIS = ["🍛", "🍚", "🌶️", "🥒", "🫙", "🐠", "🥩", "🎁", "✨", "🦐", "🦀", "🐟", "🌸", "🎀"];
 
@@ -86,7 +87,7 @@ export default function EditProductPage() {
           finalImages = [...finalImages, ...newImages];
         } catch (uploadError) {
           console.error("Image upload failed:", uploadError);
-          alert("Some images failed to upload. Please try again.");
+          toast.error("Some images failed to upload. Please try again.");
           setLoading(false);
           return;
         }
@@ -108,8 +109,9 @@ export default function EditProductPage() {
       const data = await res.json();
       if (data.success) {
         router.push("/admin/products");
+        toast.success("Product updated successfully!");
       } else {
-        alert("Failed to update product");
+        toast.error("Failed to update product");
       }
     } finally {
       setLoading(false);

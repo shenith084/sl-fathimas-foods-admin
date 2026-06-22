@@ -5,6 +5,8 @@ import { Plus, Edit2, Trash2, Shield, Loader2, CheckCircle2 } from "lucide-react
 import { Role, getRoles, deleteRole, ensureSuperAdminRole } from "@/lib/services/roleService";
 import { auth } from "@/lib/firebase/client";
 import RoleModal from "./RoleModal";
+import toast from "react-hot-toast";
+import { useConfirmStore } from "@/lib/store/confirmStore";
 
 export default function RolesClient() {
   const [roles, setRoles] = useState<Role[]>([]);
@@ -12,6 +14,7 @@ export default function RolesClient() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [isCallerSuperAdmin, setIsCallerSuperAdmin] = useState(false);
+  const { showConfirm } = useConfirmStore();
 
   useEffect(() => {
     fetchRoles();
@@ -41,14 +44,15 @@ export default function RolesClient() {
 
   const handleDelete = async (role: Role) => {
     if (role.id === "super_admin") return;
-    if (!confirm(`Are you sure you want to delete the role "${role.name}"?`)) return;
+    const confirmed = await showConfirm("Delete Role", `Are you sure you want to delete the role "${role.name}"?`);
+    if (!confirmed) return;
 
     try {
       await deleteRole(role.id);
       await fetchRoles();
     } catch (error) {
       console.error("Error deleting role:", error);
-      alert("Failed to delete role.");
+      toast.error("Failed to delete role.");
     }
   };
 

@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { Mail, MailOpen, Calendar, User, Phone, CheckCircle2, ChevronRight, X } from "lucide-react";
+import toast from "react-hot-toast";
+import { useConfirmStore } from "@/lib/store/confirmStore";
 
 export default function AdminMessagesPage() {
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMessage, setSelectedMessage] = useState<any | null>(null);
+  const { showConfirm } = useConfirmStore();
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -49,7 +52,9 @@ export default function AdminMessagesPage() {
   };
 
   const handleDeleteMessage = async () => {
-    if (!selectedMessage || !confirm("Are you sure you want to delete this message?")) return;
+    if (!selectedMessage) return;
+    const confirmed = await showConfirm("Delete Message", "Are you sure you want to delete this message?");
+    if (!confirmed) return;
     
     try {
       const res = await fetch(`/api/v1/messages?id=${selectedMessage.id}`, {
@@ -59,12 +64,13 @@ export default function AdminMessagesPage() {
       if (data.success) {
         setMessages(messages.filter(m => m.id !== selectedMessage.id));
         setSelectedMessage(null);
+        toast.success("Message deleted successfully");
       } else {
-        alert("Failed to delete message");
+        toast.error("Failed to delete message");
       }
     } catch (error) {
       console.error("Error deleting message:", error);
-      alert("Error deleting message");
+      toast.error("Error deleting message");
     }
   };
 

@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { Star } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
 import StatusBadge from "@/components/admin/StatusBadge";
-import { db } from "@/lib/firebase/client";
 import { collection, getDocs, doc, updateDoc, orderBy, query } from "firebase/firestore";
+import toast from "react-hot-toast";
 
 interface Review {
   id: string;
@@ -65,12 +65,13 @@ export default function AdminReviewsPage() {
       const json = await res.json();
       if (json.success) {
         setReviews((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
+        toast.success(`Review ${status} successfully`);
       } else {
-        alert(json.error || "Failed to update review status");
+        toast.error(json.error || "Failed to update review status");
       }
     } catch (err) {
       console.error(err);
-      alert("Error updating review status");
+      toast.error("Error updating review status");
     } finally {
       setUpdating(null);
     }

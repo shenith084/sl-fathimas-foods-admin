@@ -21,6 +21,8 @@ interface Product {
 import { writeBatch, doc, collection } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
 import { products as mockProducts } from "@/lib/mockData";
+import toast from "react-hot-toast";
+import { useConfirmStore } from "@/lib/store/confirmStore";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -29,6 +31,7 @@ export default function AdminProductsPage() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [seeding, setSeeding] = useState(false);
+  const { showConfirm } = useConfirmStore();
 
   async function loadProducts() {
     try {
@@ -53,7 +56,8 @@ export default function AdminProductsPage() {
   });
 
   async function handleDelete(id: string, name: string) {
-    if (!confirm(`Delete "${name}"? This action cannot be undone.`)) return;
+    const confirmed = await showConfirm("Delete Product", `Delete "${name}"? This action cannot be undone.`);
+    if (!confirmed) return;
     setDeleting(id);
     try {
       await fetch(`/api/v1/products/${id}`, { method: "DELETE" });
@@ -76,7 +80,7 @@ export default function AdminProductsPage() {
       await loadProducts();
     } catch (err) {
       console.error("Failed to seed products", err);
-      alert("Failed to seed products. Please check server logs.");
+      toast.error("Failed to seed products. Please check server logs.");
     } finally {
       setSeeding(false);
     }

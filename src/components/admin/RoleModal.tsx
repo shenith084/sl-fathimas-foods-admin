@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { X, Loader2 } from "lucide-react";
 import { Role, AppPermissions, defaultPermissions, saveRole } from "@/lib/services/roleService";
+import toast from "react-hot-toast";
 
 interface RoleModalProps {
   role: Role | null;
@@ -72,7 +73,7 @@ export default function RoleModal({ role, isCallerSuperAdmin, onClose, onSuccess
   };
 
   const handleSave = async () => {
-    if (!name.trim()) return alert("Role name is required");
+    if (!name.trim()) return toast.error("Role name is required");
     
     try {
       setLoading(true);
@@ -103,7 +104,7 @@ export default function RoleModal({ role, isCallerSuperAdmin, onClose, onSuccess
       onClose();
     } catch (err) {
       console.error("Error saving role:", err);
-      alert("Failed to save role");
+      toast.error("Failed to save role");
     } finally {
       setLoading(false);
     }
