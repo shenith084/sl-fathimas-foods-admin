@@ -47,7 +47,9 @@ export default function OrderDetailPage() {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ clearUnreadReceipt: true }),
-            }).catch(console.error);
+            })
+            .then(() => window.dispatchEvent(new Event('refreshNotifications')))
+            .catch(console.error);
           }
         }
       })
@@ -79,6 +81,7 @@ export default function OrderDetailPage() {
       setNewTotal("0");
       setNote("");
       toast.success("Order status updated!");
+      window.dispatchEvent(new Event('refreshNotifications'));
     } finally {
       setUpdating(false);
     }

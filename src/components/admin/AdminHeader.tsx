@@ -38,11 +38,7 @@ export default function AdminHeader({ title, onMenuClick }: { title?: string, on
       </div>
 
       <div className="flex items-center gap-3">
-        {/* Notifications bell */}
-        <button className="relative w-9 h-9 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center transition-colors shadow-sm">
-          <Bell className="w-4 h-4 text-[#666]" />
-          <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 border border-white rounded-full"></span>
-        </button>
+
 
         {/* User avatar */}
         <div className="relative">

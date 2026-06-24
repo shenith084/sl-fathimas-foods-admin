@@ -58,7 +58,14 @@ export default function AdminSidebar({ permissions, isAdminPrivileges, isOpen, o
     
     // Poll every 30 seconds
     const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
+    
+    // Listen for manual refresh events
+    window.addEventListener('refreshNotifications', fetchNotifications);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('refreshNotifications', fetchNotifications);
+    };
   }, []);
 
   // Decide if a nav item should be shown

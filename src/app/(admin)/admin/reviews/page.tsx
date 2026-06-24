@@ -66,6 +66,7 @@ export default function AdminReviewsPage() {
       if (json.success) {
         setReviews((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
         toast.success(`Review ${status} successfully`);
+        window.dispatchEvent(new Event('refreshNotifications'));
       } else {
         toast.error(json.error || "Failed to update review status");
       }

@@ -41,6 +41,7 @@ export default function AdminMessagesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, read: true })
       });
+      window.dispatchEvent(new Event('refreshNotifications'));
     } catch (error) {
       console.error("Error marking message as read:", error);
     }
@@ -65,6 +66,7 @@ export default function AdminMessagesPage() {
         setMessages(messages.filter(m => m.id !== selectedMessage.id));
         setSelectedMessage(null);
         toast.success("Message deleted successfully");
+        window.dispatchEvent(new Event('refreshNotifications'));
       } else {
         toast.error("Failed to delete message");
       }
