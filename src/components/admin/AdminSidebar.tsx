@@ -56,8 +56,8 @@ export default function AdminSidebar({ permissions, isAdminPrivileges, isOpen, o
 
     fetchNotifications();
     
-    // Poll every 30 seconds
-    const interval = setInterval(fetchNotifications, 30000);
+    // Poll every 10 seconds
+    const interval = setInterval(fetchNotifications, 10000);
     
     // Listen for manual refresh events
     window.addEventListener('refreshNotifications', fetchNotifications);
